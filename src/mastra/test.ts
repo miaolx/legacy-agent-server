@@ -7,6 +7,9 @@ const testFun = () => {
   list1.forEach((item) => {
       list2.push(item)
   })
+  let list3 = list.forEach((item) => {
+    return item
+  })
   console.log(a, b, c)
-  console.log(list1, list2)
+  console.log(list1, list2, list3)
 }
