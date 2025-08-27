@@ -28,5 +28,5 @@ export const agents = {
   githubDiffReviewAgent,
   prGroupsBuilderAgent,
   reviewGroupAgent,
-  personalDevAssistantAgent,
+  // personalDevAssistantAgent,
 };
