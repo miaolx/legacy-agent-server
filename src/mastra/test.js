@@ -4,9 +4,9 @@ import addFun from './add.js'
 import listFun  from './listFun.js'
 
 
-const test = () => {
-  let value = addFun(1, 2, 3)
-  let list = listFun([4, 5, 6])
+const test = (x) => {
+  let value = addFun(1, 2, x)
+  let list = listFun([4, 5, x])
   return list.push(value)
 }
 
