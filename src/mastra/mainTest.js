@@ -1,7 +1,7 @@
 import test from './test'
 
 const main = () => {
-  test('a')
+  test('abcd')
 }
 
 main()
