@@ -60,7 +60,7 @@ export const performComprehensiveFileReview = new Tool({
       }
 
       try {
-        reviewResult = JSON.parse(text?.replace("```json", "").replace("```", "")) as AgentResponseType;
+        reviewResult = JSON.parse(text?.split("```json")[1].replace("```", "")) as AgentResponseType;
         return reviewResult;
       } catch (error: any) {
         return {
