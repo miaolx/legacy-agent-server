@@ -20,6 +20,26 @@ const GetGithubActionArtifactContentInputSchema = z.object({
   artifact_name: z.string().describe("Exact name of the artifact to download, Default is 'dependency-graphs'"),
 });
 
+
+const defaultGraph = {
+  "src/mastra/test.js": {
+    "dependencies": ["src/mastra/add.js", "src/mastra/listFun.js"],
+    "dependents": ["src/mastra/mainTest.js"]
+  },
+  "src/mastra/add.js": {
+    "dependencies": [],
+    "dependents": ["src/mastra/test.js"]
+  },
+  "src/mastra/listFun.js": {
+    "dependencies": [],
+    "dependents": ["src/mastra/test.js"]
+  },
+  "src/mastra/mainTest.js": {
+    "dependencies": ["src/mastra/test.js"],
+    "dependents": []
+  }
+}
+
 const GetGithubActionArtifactContentOutputSchema = z.record(z.string(), z.object({
   dependencies: z.array(z.string()).describe('List of files this file depends on.'),
   dependents: z.array(z.string()).describe('List of files that depend on this file.'),
@@ -38,6 +58,7 @@ export const getGithubActionArtifactContent = new Tool({
   execute: async ({ context }: { context: z.infer<typeof GetGithubActionArtifactContentInputSchema> }): Promise<SimplifiedGraph> => {
     // Destructure input directly from context
     const { owner, repo, head_sha, artifact_name } = context;
+    // return defaultGraph
     try {
       // 1. Find the latest successful workflow run for the head_sha
       console.log(`Searching workflow runs for ${owner}/${repo} at ${head_sha}`);
