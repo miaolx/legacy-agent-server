@@ -46,7 +46,7 @@ const FileGroupSchema = z.object({
 }).describe("Represents a group of files, distinguishing between changed files needing review and related context files (dependencies and dependents).");
 
 // Output Schema for the Tool - MODIFIED DESCRIPTION
-const GroupChangedFilesOutputSchema = z.array(FileGroupSchema)
+export const GroupChangedFilesOutputSchema = z.array(FileGroupSchema)
   .describe("An array of file groups. Each group differentiates between changed files to be reviewed and related context files (split into dependencies and dependents).");
 
 

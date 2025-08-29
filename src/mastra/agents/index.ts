@@ -16,6 +16,10 @@ import { prGroupsBuilderAgent } from './github-pr-groups-builder';
 // GitHub Review Group Agent
 import { reviewGroupAgent } from './github-review-group';
 
+
+// MLX Test Review Group Agent
+import { mlxCodeReviewAgent } from './mlx-code-review';
+
 // Personal Dev Assistant Agent
 import { personalDevAssistantAgent } from './personalDevAssistant';
 
@@ -28,5 +32,6 @@ export const agents = {
   githubDiffReviewAgent,
   prGroupsBuilderAgent,
   reviewGroupAgent,
+  mlxCodeReviewAgent,
   // personalDevAssistantAgent,
 };
