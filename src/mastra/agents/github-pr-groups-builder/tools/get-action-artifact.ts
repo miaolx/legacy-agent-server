@@ -58,7 +58,7 @@ export const getGithubActionArtifactContent = new Tool({
   execute: async ({ context }: { context: z.infer<typeof GetGithubActionArtifactContentInputSchema> }): Promise<SimplifiedGraph> => {
     // Destructure input directly from context
     const { owner, repo, head_sha, artifact_name } = context;
-    // return defaultGraph
+    return defaultGraph
     try {
       // 1. Find the latest successful workflow run for the head_sha
       console.log(`Searching workflow runs for ${owner}/${repo} at ${head_sha}`);

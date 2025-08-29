@@ -10,6 +10,11 @@ const inputSchema = z.object({
   repo: z
     .string()
     .describe("The name of the repository. As react in facebook/react"),
+  headRef: z
+    .string()
+    .describe(
+      "The name of the commit/branch/tag. Default: the repository's default branch."
+    ),
 });
 
 const outputSchema = z.union([
@@ -36,13 +41,15 @@ export const getFileContent = new Tool({
   inputSchema,
   outputSchema,
   execute: async ({ context }) => {
-    const { owner, path, repo } = context;
+    const { owner, path, repo, headRef } = context;
+    // console.log("🚀 ~ context:", context)
 
     try {
       const response = await GithubAPI.rest.repos.getContent({
         owner,
         repo,
         path,
+        ref: headRef
       });
 
       if (Array.isArray(response.data)) {
