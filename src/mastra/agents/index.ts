@@ -16,12 +16,15 @@ import { prGroupsBuilderAgent } from './github-pr-groups-builder';
 // GitHub Review Group Agent
 import { reviewGroupAgent } from './github-review-group';
 
+import { gitlabPrGroupsBuilderAgent } from './gitlab-pr-group';
+
+import { gitlabReviewGroupAgent } from './gitlab-pr-review';
 
 // MLX Test Review Group Agent
 import { mlxCodeReviewAgent } from './mlx-code-review';
 
 // Personal Dev Assistant Agent
-import { personalDevAssistantAgent } from './personalDevAssistant';
+// import { personalDevAssistantAgent } from './personalDevAssistant';
 
 // 注册到 mastra 的 agents
 export const agents = {
@@ -32,6 +35,8 @@ export const agents = {
   githubDiffReviewAgent,
   prGroupsBuilderAgent,
   reviewGroupAgent,
+  gitlabPrGroupsBuilderAgent,
+  gitlabReviewGroupAgent,
   mlxCodeReviewAgent,
   // personalDevAssistantAgent,
 };

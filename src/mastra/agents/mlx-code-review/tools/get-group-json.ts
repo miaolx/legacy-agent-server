@@ -36,7 +36,7 @@ export const getMlxGroupJson = new Tool({
   }),
   outputSchema: outputSchema.describe("structured file grouping result"),
   execute: async ({ context, mastra }) => {
-    const agent = mastra.getAgent("prGroupsBuilderAgent");
+    const agent = mastra.getAgent("gitlabPrGroupsBuilderAgent");
     try {
       const response = await agent.generate(JSON.stringify(context));
       const groupJson = response!.text?.split("```json")[1].replace("```", "")
@@ -65,7 +65,7 @@ export const getMlxCommentJson = new Tool({
     body: z.number().describe("your comment"),
   }),
   execute: async ({ context, mastra }) => {
-    const agent = mastra.getAgent("reviewGroupAgent");
+    const agent = mastra.getAgent("gitlabReviewGroupAgent");
     try {
       const response = await agent.generate(JSON.stringify(context));
       console.log("🚀 ~ response:", response)
