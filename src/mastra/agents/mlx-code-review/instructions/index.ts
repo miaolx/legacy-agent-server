@@ -9,11 +9,19 @@ export const groupInstructions = `
 
 # 核心工作流程：
 
-1.  **获取 评论 详情：**
+1.  **获取 分组 详情：**
     *   使用 \`getMlxGroupJson\` 工具。
     *   **输入：** 将输入的\`owner\`、\`repo\` 和 \`pull_number\`作为输入。
-    *   **关键输出：** 获得最终评论内容。
-
+    *   **关键输出：** 从\`getMlxGroupJson\` 获得JSON分组数据\`groupJson\`。
+    
+2.  **获取 评论 详情：**
+    *   使用 \`getMlxCommentJson\` 工具。
+    *   **输入：** 将步骤1中得到的\`groupJson\`作为输入。
+    *   **关键输出：** 从\`getMlxCommentJson\` 获得评论Json数据\`commentJson\`。
+    *   从\`commentJson\`拿到\`body\`内容并输出。
+    
+# 输出：
+评论内容
 
 # 重要约束：
 *   你的职责是按顺序调用指定的工具，并收集、整合它们的结构化输出。

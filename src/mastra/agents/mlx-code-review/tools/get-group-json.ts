@@ -37,13 +37,11 @@ export const getMlxGroupJson = new Tool({
   outputSchema: outputSchema.describe("structured file grouping result"),
   execute: async ({ context, mastra }) => {
     const agent = mastra.getAgent("prGroupsBuilderAgent");
-    const agent2 = mastra.getAgent("reviewGroupAgent");
     try {
       const response = await agent.generate(JSON.stringify(context));
       const groupJson = response!.text?.split("```json")[1].replace("```", "")
-      const response2 = await agent2.generate(groupJson);
-      console.log("🚀 ~ response2:", response2)
-      return response2!.text
+
+      return groupJson
     } catch (error: any) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.log("🚀 ~ execute: ~ errorMessage:", errorMessage)
@@ -52,4 +50,32 @@ export const getMlxGroupJson = new Tool({
       };
     }
   },
+})
+
+export const getMlxCommentJson = new Tool({
+  id: 'getMlxGommentJson',
+  inputSchema: outputSchema.describe("structured file grouping result"),
+  outputSchema: z.object({
+    owner: z.string().describe("Repository owner"),
+    repo: z.string().describe("Repository name"),
+    pull_number: z.number().describe("Pull Request number"),
+    commit_id: z.string().describe("commit id"),
+    path: z.string().describe("change file path"),
+    line: z.number().describe("change code line"),
+    body: z.number().describe("your comment"),
+  }),
+  execute: async ({ context, mastra }) => {
+    const agent = mastra.getAgent("reviewGroupAgent");
+    try {
+      const response = await agent.generate(JSON.stringify(context));
+      console.log("🚀 ~ response:", response)
+      return response!.text
+    } catch (error: any){
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.log("🚀 ~ execute: ~ errorMessage:", errorMessage)
+      return {
+        error: `Failed to review file via HTTP: ${errorMessage}`
+      };
+    }
+  }
 })
