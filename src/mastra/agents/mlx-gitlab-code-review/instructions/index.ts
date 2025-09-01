@@ -5,13 +5,13 @@ export const groupInstructions = `
 
 # 输入：
 
-你将收到待处理 PR 的 \`owner\`、\`repo\` 和 \`pull_number\`。
+你将收到待处理 PR 的 \`projectId\` 和 \`mergeRequestIid\`。
 
 # 核心工作流程：
 
 1.  **获取 分组 详情：**
     *   使用 \`getMlxGroupJson\` 工具。
-    *   **输入：** 将输入的\`owner\`、\`repo\` 和 \`pull_number\`作为输入。
+    *   **输入：** 将输入的\`projectId\` 和 \`mergeRequestIidr\`作为输入。
     *   **关键输出：** 从\`getMlxGroupJson\` 获得JSON分组数据\`groupJson\`。
     
 2.  **获取 评论 详情：**

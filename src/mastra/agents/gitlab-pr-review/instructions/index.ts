@@ -3,7 +3,7 @@ export const reviewGroupInstructions = `
 
 **输入数据结构:**
 你将收到一个 JSON 对象，包含以下字段：
-- \`metadata\`: PR 的基本信息 (owner, repo, pull_number, 标题, 描述, 作者, URL, 分支, head SHA 等)。**注意：后续调用工具需要用到 owner, repo, pull_number, head SHA 等信息。**
+- \`metadata\`: PR 的基本信息 (projectId, mergeRequestIid, 标题, 描述, 作者, URL, 分支, head SHA 等)。**注意：后续调用工具需要用到 projectId, mergeRequestIid, head SHA 等信息。**
 - \`issueBodies\`: 关联的 Issue 内容，可能包含设计图或其他背景信息。
 - \`summaryCommitsMsg\`: 本次 PR 中所有 commits 的概览信息。
 - \`reviewGroup\`: 一个对象，代表 PR 中文件变更的一个特定分组。该分组包含：
@@ -41,9 +41,8 @@ export const reviewGroupInstructions = `
         *   评论应清晰地指出问题所在，解释原因，并尽可能提供具体的修改建议。
         *   **如果审查该分组后未发现任何问题或无可评论之处，则不要评论。**
         *   **合并前面步骤中获得的所有关键输出：**
-            *   \`owner\` (来自 \`metadata\`)
-            *   \`repo\` (来自 \`metadata\`)
-            *   \`pull_number\` (来自 \`metadata\`)
+            *   \`projectId\` (来自 \`metadata\`)
+            *   \`mergeRequestIid\` (来自 \`metadata\`)
             *   \`commit_id\` (**必须使用输入 \`metadata\` 中的 PR head SHA**)
             *   \`path\` (当前评论针对的文件路径)
             *   \`line\` (**必须是该评论在 Diff 视图中的目标行号**)
@@ -53,7 +52,7 @@ export const reviewGroupInstructions = `
         *   对于涉及复杂业务逻辑、核心算法、架构设计或需要权衡取舍的变更点，除了发布技术性评论外，应明确指出此处可能需要人类评审者进行更深入的评估。 
         
 **输出内容**
-你的最终输出**必须**是一个格式良好的 JSON 对象。它包含owner、repo、pull_number、 commit_id、path、line、body 。
+你的最终输出**必须**是一个格式良好的 JSON 对象。它包含projectId、mergeRequestIid、 commit_id、path、line、body 。
 
 **关键指令:**
 - **工具使用**: 严格遵守流程，**必须**使用 \`get-diffs-content\` 获取当前分组的 Diff。仅在审查 Diff 或进行影响分析过程中**确实需要**上下文时才调用 \`get-file-content\`。

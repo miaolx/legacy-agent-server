@@ -1,15 +1,11 @@
-import { GithubAPI } from "../../../lib/github";
+import { GitlabAPI } from "../../../lib/gitlab"
 import { Tool } from "@mastra/core/tools";
 import { z } from "zod";
 
 const inputSchema = z.object({
-  owner: z
-    .string()
-    .describe("The owner of the repository. As facebook in facebook/react"),
+  projectId: z.string().describe("The projectId of the repository"),
+  mergeRequestIid: z.number().describe("The name of the mergeRequest (e.g., 1)."),
   path: z.string().describe("The file path to fetch content for"),
-  repo: z
-    .string()
-    .describe("The name of the repository. As react in facebook/react"),
   headRef: z
     .string()
     .describe(
@@ -41,25 +37,20 @@ export const getFileContent = new Tool({
   inputSchema,
   outputSchema,
   execute: async ({ context }) => {
-    const { owner, path, repo, headRef } = context;
+    const { projectId, path, headRef } = context;
     // console.log("🚀 ~ context:", context)
 
     try {
-      const response = await GithubAPI.rest.repos.getContent({
-        owner,
-        repo,
-        path,
-        ref: headRef
-      });
+      const response = await GitlabAPI.RepositoryFiles.show(projectId, path, headRef);
 
-      if (Array.isArray(response.data)) {
+      if (Array.isArray(response)) {
         return {
           ok: false as const,
           messsage: `Path ${path} points to a directory, not a file`,
         };
       }
 
-      if (!("content" in response.data)) {
+      if (!("content" in response)) {
         return {
           ok: false as const,
           messsage: `No content available for file ${path}`,
@@ -68,7 +59,7 @@ export const getFileContent = new Tool({
 
       let content: string;
       try {
-        content = Buffer.from(response.data.content, "base64").toString(
+        content = Buffer.from(response.content, "base64").toString(
           "utf-8",
         );
       } catch (error) {

@@ -1,4 +1,5 @@
 import { GithubAPI } from "../../../lib/github";
+import { GitlabAPI } from "../../../lib/gitlab"
 import { Tool } from "@mastra/core/tools";
 import { z } from "zod";
 
@@ -9,7 +10,7 @@ const outputSchema = z.object({
     description: z.string().nullable(),
     author: z.string().nullable(),
     url: z.string().url(),
-    state: z.enum(["open", "closed"]),
+    state: z.enum(["opened", "closed"]),
     number: z.number().int(),
     baseRef: z.string().describe("Base branch name"),
     headRef: z.string().describe("Head branch name"),
@@ -43,52 +44,53 @@ export const getPrDetail = new Tool({
   id: "getPrDetail",
   description: "Fetches comprehensive details for a specific Pull Request, including metadata, associated issues, comments, a list of changed files (WITHOUT the full diff or file patches), and commit messages.", // UPDATED description
   inputSchema: z.object({
-    owner: z.string().describe("The owner of the repository (e.g., 'facebook')."),
-    repo: z.string().describe("The name of the repository (e.g., 'react')."),
-    pull_number: z.number().int().positive().describe("The number of the pull request."),
+    projectId: z.string().describe("The projectId of the repository"),
+    mergeRequestIid: z.number().describe("The name of the mergeRequest (e.g., 1)."),
   }),
   outputSchema,
   execute: async ({ context }) => {
-    const { owner, repo, pull_number } = context;
+    const { projectId, mergeRequestIid } = context;
 
     try {
       // 1. Concurrently fetch PR metadata, files, and commits
       const [prResponse, filesResponse, commitsResponse] = await Promise.all([
-        GithubAPI.rest.pulls.get({ owner, repo, pull_number }),
-        GithubAPI.rest.pulls.listFiles({ owner, repo, pull_number, per_page: 100 }),
-        GithubAPI.rest.pulls.listCommits({ owner, repo, pull_number, per_page: 100 }),
+        GitlabAPI.MergeRequests.show(projectId, mergeRequestIid),
+        GitlabAPI.MergeRequests.showChanges(projectId, mergeRequestIid),
+        GitlabAPI.MergeRequests.allCommits(projectId, mergeRequestIid),
       ]);
 
       // 2. metadata and associated issues
-      const prData = prResponse.data;
+      const prData: any = prResponse;
       // if (prData) {
-      const associatedIssues = await getAssociatedIssues(prData, owner, repo);
+      const associatedIssues: { number: number, title: string, url: string, state: string }[] = [];
       const metadata = {
         title: prData.title,
-        description: prData.body ?? null,
-        author: prData.user?.login ?? null,
-        url: prData.html_url,
-        state: prData.state as "open" | "closed",
-        number: prData.number,
-        baseRef: prData.base.ref,
-        headRef: prData.head.ref,
-        headSha: prData.head.sha,
+        description: prData.description ?? null,
+        author: prData.author?.username ?? null,
+        url: prData.web_url,
+        state: prData.state as "opened" | "closed",
+        number: prData.iid,
+        baseRef: prData.target_branch,
+        headRef: prData.source_branch,
+        headSha: prData.diff_refs.head_sha,
+        projectId,
+        mergeRequestIid,
         associatedIssues,
       }
 
       // 3. changed files
-      const files = filesResponse.data.map(f => ({
-        filename: f.filename,
+      const files = filesResponse.changes.map(f => ({
+        filename: f.new_path,
         status: f.status as 'added' | 'modified' | 'removed' | 'renamed',
-        changes: f.changes,
+        changes: f.diff,
         additions: f.additions,
         deletions: f.deletions,
       }));
 
       // 4. commits messages
-      const commits = commitsResponse.data.map(c => ({
-        message: c.commit.message,
-        date: c.commit.author?.date ?? null,
+      const commits = commitsResponse.map(c => ({
+        message: c.message,
+        date: c.committed_date ?? null,
       }));
 
       return {
@@ -98,12 +100,12 @@ export const getPrDetail = new Tool({
         // rawDiff, // REMOVED rawDiff field
       };
     } catch (error: any) {
-      console.error(`Error fetching details for PR #${pull_number} in ${owner}/${repo}:`, error);
+      console.error(`Error fetching details for PR #${mergeRequestIid} in ${projectId}:`, error);
       let message = "Failed to fetch pull request details.";
       if (error.status === 404) {
-        message = `Pull Request #${pull_number} not found in ${owner}/${repo}.`;
+        message = `Pull Request #${mergeRequestIid} not found in ${projectId}.`;
       } else if (error.status === 403 || error.status === 401) {
-        message = `Permission denied fetching details for PR #${pull_number}. Check GITHUB_TOKEN permissions.`;
+        message = `Permission denied fetching details for PR #${mergeRequestIid}. Check GITHUB_TOKEN permissions.`;
       } else if (error instanceof Error) {
         message = error.message;
       }

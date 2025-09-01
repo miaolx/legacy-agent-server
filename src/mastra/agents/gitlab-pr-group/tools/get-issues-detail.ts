@@ -14,7 +14,7 @@ const successOutputSchema = z.object({
   ok: z.literal(true).default(true), // Indicate success
   number: z.number().int().positive(),
   title: z.string(),
-  state: z.string(), // e.g., 'open', 'closed'
+  state: z.string(), // e.g., 'opened', 'closed'
   url: z.string().url(),
   body: z.string().nullable().describe("The main content (body) of the issue."),
 });

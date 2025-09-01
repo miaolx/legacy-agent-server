@@ -23,6 +23,8 @@ import { gitlabReviewGroupAgent } from './gitlab-pr-review';
 // MLX Test Review Group Agent
 import { mlxCodeReviewAgent } from './mlx-code-review';
 
+import { mlxGitlabCodeReviewAgent } from './mlx-gitlab-code-review'
+
 // Personal Dev Assistant Agent
 // import { personalDevAssistantAgent } from './personalDevAssistant';
 
@@ -38,5 +40,6 @@ export const agents = {
   mlxCodeReviewAgent,
   gitlabPrGroupsBuilderAgent,
   gitlabReviewGroupAgent,
+  mlxGitlabCodeReviewAgent,
   // personalDevAssistantAgent,
 };

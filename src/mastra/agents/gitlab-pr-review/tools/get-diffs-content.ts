@@ -1,4 +1,4 @@
-import { GithubAPI } from "../../../lib/github";
+import { GitlabAPI } from "../../../lib/gitlab"
 import { Tool } from "@mastra/core/tools";
 import { z } from "zod";
 
@@ -17,24 +17,23 @@ export const getDiffsContent = new Tool({
   id: "getDiffsContent",
   description: "Fetches the diff content of the changed files in the pull request.",
   inputSchema: z.object({
-    owner: z.string().describe("The owner of the repository (e.g., 'facebook')."),
-    repo: z.string().describe("The name of the repository (e.g., 'react')."),
-    pull_number: z.number().int().positive().describe("The number of the pull request."),
+    projectId: z.string().describe("The projectId of the repository"),
+    mergeRequestIid: z.number().describe("The name of the mergeRequest (e.g., 1)."),
     changed_file_paths: z.array(z.string()).describe("The path of the file to get the diff content."),
   }),
   outputSchema,
   execute: async ({ context }) => {
-    const { owner, repo, pull_number, changed_file_paths } = context;
+    const { projectId, mergeRequestIid, changed_file_paths } = context;
 
     try {
-      const filesResponse = await GithubAPI.rest.pulls.listFiles({ owner, repo, pull_number, per_page: 1000 });
-      const files = filesResponse.data.map(f => ({
-        filename: f.filename,
+      const filesResponse = await GitlabAPI.MergeRequests.showChanges(projectId, mergeRequestIid);
+      const files = filesResponse.changes.map(f => ({
+        filename: f.new_path,
         status: f.status as 'added' | 'modified' | 'removed' | 'renamed',
-        changes: f.changes,
+        changes: f.diff,
         additions: f.additions,
         deletions: f.deletions,
-        patch: f.patch,
+        patch: f.patch
       }));
 
       const filteredFiles = files.filter(f => changed_file_paths.includes(f.filename));
