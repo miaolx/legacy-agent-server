@@ -1,6 +1,6 @@
 import { Agent } from "@mastra/core/agent";
 
-import { deepSeekModel } from '../../model-provider/deepseek';
+import { deepSeekModel, dzhModel } from '../../model-provider/deepseek';
 import { prGroupsBuilderInstructions } from "./instructions";
 import { getPrDetail } from "./tools/get-pr-detail";
 import { getGithubActionArtifactContent } from "./tools/get-action-artifact";

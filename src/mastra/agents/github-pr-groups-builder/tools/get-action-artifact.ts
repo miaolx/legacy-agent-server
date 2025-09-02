@@ -24,7 +24,7 @@ const GetGithubActionArtifactContentInputSchema = z.object({
 const defaultGraph = {
   "src/mastra/test.js": {
     "dependencies": ["src/mastra/add.js", "src/mastra/listFun.js"],
-    "dependents": ["src/mastra/mainTest.js"]
+    "dependents": ["src/mastra/index.js"]
   },
   "src/mastra/add.js": {
     "dependencies": [],
@@ -34,7 +34,7 @@ const defaultGraph = {
     "dependencies": [],
     "dependents": ["src/mastra/test.js"]
   },
-  "src/mastra/mainTest.js": {
+  "src/mastra/index.js": {
     "dependencies": ["src/mastra/test.js"],
     "dependents": []
   }
