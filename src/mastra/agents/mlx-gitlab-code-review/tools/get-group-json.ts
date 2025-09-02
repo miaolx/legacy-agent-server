@@ -14,12 +14,12 @@ const outputSchema = z.object({
     baseRef: z.string().describe("Base branch name"),
     headRef: z.string().describe("Head branch name"),
     headSha: z.string().describe("Head commit SHA"),
-    associatedIssues: z.array(z.object({
-      number: z.number().int(),
-      title: z.string(),
-      url: z.string().url(),
-      state: z.string(),
-    })).describe("Issues linked to the PR"),
+    // associatedIssues: z.array(z.object({
+    //   number: z.number().int(),
+    //   title: z.string(),
+    //   url: z.string().url(),
+    //   state: z.string(),
+    // })).describe("Issues linked to the PR"),
     projectId: z.string().describe("The projectId of the repository"),
     mergeRequestIid: z.number().describe("The name of the mergeRequest (e.g., 1)."),
   }),

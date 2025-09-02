@@ -15,12 +15,6 @@ const outputSchema = z.object({
     baseRef: z.string().describe("Base branch name"),
     headRef: z.string().describe("Head branch name"),
     headSha: z.string().describe("Head commit SHA"),
-    associatedIssues: z.array(z.object({
-      number: z.number().int(),
-      title: z.string(),
-      url: z.string().url(),
-      state: z.string(),
-    })).describe("Issues linked to the PR"),
   }),
   files: z.array(z.object({
     filename: z.string(),
@@ -62,7 +56,7 @@ export const getPrDetail = new Tool({
       // 2. metadata and associated issues
       const prData: any = prResponse;
       // if (prData) {
-      const associatedIssues: { number: number, title: string, url: string, state: string }[] = [];
+      const associatedIssues: any[] = [];
       const metadata = {
         title: prData.title,
         description: prData.description ?? null,
