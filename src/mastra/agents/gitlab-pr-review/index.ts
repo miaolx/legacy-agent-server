@@ -11,7 +11,7 @@ export const gitlabReviewGroupAgent = new Agent({
   model: deepSeekModel,
   instructions: reviewGroupInstructions,
   tools: {
-    fileComment,
+    // fileComment,
     getFileContent,
     getDiffsContent,
   },

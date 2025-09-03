@@ -19,6 +19,7 @@ export const groupInstructions = `
     *   **输入：** 将步骤1中得到的\`groupJson\`作为输入。
     *   **关键输出：** 从\`getMlxCommentJson\` 获得评论Json数据\`commentJson\`。
     *   从\`commentJson\`拿到\`body\`内容并输出。
+    *   如果\`body\`内容有值，调用 \`file-comment\` 工具将该评论发布到对应的文件和行。
     
 # 输出：
 评论内容
