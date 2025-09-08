@@ -15,6 +15,6 @@ export const gitlabPrGroupsBuilderAgent = new Agent({
     getPrDetail,
     getGithubActionArtifactContent,
     groupChangedFiles,
-    getIssueDetail,
+    // getIssueDetail,
   },
 });
