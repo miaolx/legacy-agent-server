@@ -66,11 +66,10 @@ export const getMlxCommentJson = new Tool({
     body: z.number().describe("your comment"),
   }),
   execute: async ({ context, mastra }) => {
-    console.log("🚀 ~ context:", context)
     const agent = mastra.getAgent("gitlabReviewGroupAgent");
     try {
       const response = await agent.generate(JSON.stringify(context));
-      console.log("🚀 ~ response:", response)
+      console.log("🚀 ~ response:", response!.text)
       return response!.text
     } catch (error: any){
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';

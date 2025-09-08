@@ -6,9 +6,7 @@ const inputSchema = z.object({
   projectId: z.string().describe("The projectId of the repository"),
   mergeRequestIid: z.number().describe("The name of the mergeRequest (e.g., 1)."),
   commit_id: z.string().describe("The SHA of the commit the comment applies to (usually the PR's head SHA)."),
-  path: z.string().describe("The relative path to the file being commented on."),
-  line: z.number().int().positive().describe("The line number **in the pull request diff view** that the comment applies to. This is NOT the line number in the source file itself."),
-  body: z.string().describe("The text of the review comment."),
+  text: z.string().describe("The text of the review comment."),
 });
 
 const outputSchema = z.object({
@@ -23,10 +21,10 @@ export const fileComment = new Tool({
   inputSchema,
   outputSchema,
   execute: async ({ context }) => {
-    const { projectId, mergeRequestIid, commit_id, path, line, body } = context;
-
+    console.log("🚀 ~ context:", context)
+    const { projectId, mergeRequestIid, text } = context;
     try {
-      const response = await GitlabAPI.MergeRequestDiscussions.create(projectId, mergeRequestIid, body);
+      const response = await GitlabAPI.MergeRequestDiscussions.create(projectId, mergeRequestIid, text);
 
       if (response.status === 201) {
         return {
