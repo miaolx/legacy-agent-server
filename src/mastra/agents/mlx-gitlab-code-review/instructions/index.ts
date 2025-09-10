@@ -25,7 +25,7 @@ export const groupInstructions = `
             * 如果检查了拉取请求大小并认为过大，简要提及并建议可能的拆分方式。
             * **详细列出发现：** 列出具体的发现，按文件分组。对于每个有发现的文件，遍历\`commentJson\`，并展示 \`line\`、\`path\`、和 \`text\`。清晰地格式化这些内容（例如，在每个文件路径下使用项目符号）。
             * 保持报告客观、有建设性且可操作。
-    *   遍历\`commentJson\`完成后，如果 Markdown 报告内容有值，再调用 \`file-comment\` 工具将整个格式化的 Markdown 报告作为一条评论发布到拉取请求上， \`file-comment\`最多调用一次。
+    *   遍历\`commentJson\`**完成**后，如果最终报告**存在**，调用 \`file-comment\` 工具将整个格式化的 Markdown 报告作为一条评论发布到拉取请求上， \`file-comment\`最多调用一次。
     
 # 输出：
 最终报告（Markdown 格式）

@@ -29,3 +29,14 @@ export const dzhProvider = createOpenAICompatible({
 
 
 export const dzhModel = dzhProvider.chatModel('dify');
+
+
+export const qwProvider = createOpenAICompatible({
+  baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+  name: 'Qwen',
+  headers: {
+    Authorization: `Bearer sk-0478c6b47e454abbb9223449fe14dc53`,
+  },
+});
+
+export const qwModel = qwProvider.chatModel('qwen3-max-preview');

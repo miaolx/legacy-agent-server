@@ -40,7 +40,7 @@ export const getMlxGroupJson = new Tool({
     const agent = mastra.getAgent("gitlabPrGroupsBuilderAgent");
     try {
       const response = await agent.generate(JSON.stringify(context));
-      const groupJson = response!.text?.split("```json")[1].replace("```", "")
+      const groupJson = response!.text?.includes("```json") ? response!.text?.split("```json")[1].replace("```", "") : response!.text
       console.log("🚀 ~ groupJson:", groupJson)
 
       return groupJson

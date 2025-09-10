@@ -1,6 +1,6 @@
 import { Agent } from "@mastra/core/agent";
 
-import { deepSeekModel, dzhModel } from '../../model-provider/deepseek';
+import { deepSeekModel, dzhModel, qwModel } from '../../model-provider/deepseek';
 import { prGroupsBuilderInstructions } from "./instructions";
 import { getPrDetail } from "./tools/get-pr-detail";
 import { getGithubActionArtifactContent } from "./tools/get-action-artifact";
@@ -9,7 +9,7 @@ import { getIssueDetail } from "./tools/get-issues-detail";
 
 export const gitlabPrGroupsBuilderAgent = new Agent({
   name: "gitlab-pr-groups-builder",
-  model: deepSeekModel,
+  model: qwModel,
   instructions: prGroupsBuilderInstructions,
   tools: {
     getPrDetail,

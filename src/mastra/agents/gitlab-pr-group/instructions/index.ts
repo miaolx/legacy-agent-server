@@ -12,7 +12,7 @@ You will receive the \`projectId\` and \`mergeRequestIid\` of the PR to be proce
 1.  **Get PR Details:**
     *   Use the \`getPrDetail\` tool to get the detailed information of the PR.
     *   **Key Outputs:** Extract and retain:
-        *   Basic PR information (\`metadata\`), including (\`projectId\`, \`mergeRequestIid\`, \`title\`, \`prDescription\`, \`baseRef\`, \`headRef\`, \`headSha\`, \`associatedIssues\`). associatedIssues is a list of Issue metadata.
+        *   Basic PR information (\`metadata\`), including (\`projectId\`, \`mergeRequestIid\`, \`title\`, \`description\`, \`baseRef\`, \`headRef\`, \`headSha\`, \`associatedIssues\`). associatedIssues is a list of Issue metadata.
         *   List of changed files (\`changedFiles\`), including path (\`filePath\`), status (\`status\`), number of modified lines (\`changes\`), number of added lines (\`additions\`), and number of deleted lines (\`deletions\`).
         *   List of commits (\`commits\`), including message (\`message\`), and date (\`date\`).
 
