@@ -28,6 +28,11 @@ import { mlxGitlabCodeReviewAgent } from './mlx-gitlab-code-review'
 // Personal Dev Assistant Agent
 // import { personalDevAssistantAgent } from './personalDevAssistant';
 
+import { getPrDetail } from './gitlab-pr-group/tools/get-pr-detail';
+import { getGithubActionArtifactContent } from "./gitlab-pr-group/tools/get-action-artifact";
+import { groupChangedFiles } from "./gitlab-pr-group/tools/group-changed-files";
+
+
 // 注册到 mastra 的 agents
 export const agents = {
   weatherAgent,
@@ -43,3 +48,9 @@ export const agents = {
   mlxGitlabCodeReviewAgent,
   // personalDevAssistantAgent,
 };
+
+export const tools = {
+  getPrDetail,
+  getGithubActionArtifactContent,
+  groupChangedFiles
+}

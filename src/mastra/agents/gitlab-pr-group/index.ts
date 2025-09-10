@@ -9,7 +9,7 @@ import { getIssueDetail } from "./tools/get-issues-detail";
 
 export const gitlabPrGroupsBuilderAgent = new Agent({
   name: "gitlab-pr-groups-builder",
-  model: deepSeekModel,
+  model: dzhModel,
   instructions: prGroupsBuilderInstructions,
   tools: {
     getPrDetail,
