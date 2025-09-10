@@ -46,7 +46,7 @@ export const getMlxGroupJson = new Tool({
       return groupJson
     } catch (error: any) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.log("🚀 ~ execute: ~ errorMessage:", errorMessage)
+      console.log("🚀 ~ execute: ~ errorMessage1:", errorMessage)
       return {
         error: `Failed to review file via HTTP: ${errorMessage}`
       };
@@ -71,9 +71,9 @@ export const getMlxCommentJson = new Tool({
       const response = await agent.generate(JSON.stringify(context));
       console.log("🚀 ~ response:", response!.text)
       return response!.text
-    } catch (error: any){
+    } catch (error: any) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.log("🚀 ~ execute: ~ errorMessage:", errorMessage)
+      console.log("🚀 ~ execute: ~ errorMessage2:", errorMessage)
       return {
         error: `Failed to review file via HTTP: ${errorMessage}`
       };
