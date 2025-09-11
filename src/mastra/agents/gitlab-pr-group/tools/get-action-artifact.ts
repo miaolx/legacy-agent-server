@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { Tool } from '@mastra/core/tools';
-import { GithubAPI } from '../../../lib/github';
+import { GitlabAPI } from '../../../lib/gitlab'; // 使用 GitLab API
 import AdmZip from 'adm-zip';
 
 interface SimplifiedGraph {
@@ -10,8 +10,8 @@ interface SimplifiedGraph {
   };
 }
 const GetGithubActionArtifactContentInputSchema = z.object({
-  owner: z.string().describe('Owner of the GitHub repository'),
-  repo: z.string().describe('Name of the GitHub repository'),
+  projectId: z.string().describe("The projectId of the repository"),
+  mergeRequestIid: z.number().describe("The name of the mergeRequest (e.g., 1)."),
   head_sha: z
     .string()
     .describe(
@@ -54,69 +54,61 @@ const GetGithubActionArtifactContentOutputSchema = z.record(z.string(), z.object
 }));
 
 /**
- * Fetches the content of a specific file within a GitHub Action artifact.
+ * Fetches the content of a specific file within a GitLab CI job artifact.
  */
-export const getGithubActionArtifactContent = new Tool({
-  id: 'getGithubActionArtifactContent', // Use id instead of name
+export const getGitlabActionArtifactContent = new Tool({
+  id: 'getGitlabActionArtifactContent', // Use id instead of name
   description:
-    'Downloads a named artifact from the latest successful GitHub Action workflow run for a specific commit SHA, parses it, and returns a *simplified* JSON string containing only internal module dependencies and dependents.',
+    'Downloads a named artifact from the latest successful GitLab CI pipeline for a specific commit SHA, parses it, and returns a *simplified* JSON string containing only internal module dependencies and dependents.',
   inputSchema: GetGithubActionArtifactContentInputSchema,
   outputSchema: GetGithubActionArtifactContentOutputSchema,
   // Correct execute signature and input access
   execute: async ({ context }: { context: z.infer<typeof GetGithubActionArtifactContentInputSchema> }): Promise<SimplifiedGraph> => {
     // Destructure input directly from context
-    const { owner, repo, head_sha, artifact_name } = context;
+    const { projectId, mergeRequestIid, head_sha, artifact_name } = context;
     return defaultGraph
     try {
-      // 1. Find the latest successful workflow run for the head_sha
-      console.log(`Searching workflow runs for ${owner}/${repo} at ${head_sha}`);
-      const runsResponse = await GithubAPI.rest.actions.listWorkflowRunsForRepo({
-        owner,
-        repo,
-        head_sha,
+      // 1. Find the latest successful pipeline for the head_sha
+      console.log(`Searching pipelines for ${projectId} at ${head_sha}`);
+      const pipelinesResponse = await GitlabAPI.Pipelines.all(projectId, {
+        sha: head_sha,
         status: 'success',
+        perPage: 100,
       });
 
-      if (runsResponse.data.total_count === 0) {
+      if (pipelinesResponse.length === 0) {
         throw new Error(
-          `No successful workflow runs found for SHA ${head_sha}`
+          `No successful pipelines found for SHA ${head_sha}`
         );
       }
-      const latestRun = runsResponse.data.workflow_runs.sort(
-        (a, b) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      const latestPipeline = pipelinesResponse.sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       )[0];
-      const run_id = latestRun.id;
-      console.log(`Found latest successful run ID: ${run_id}`);
+      const pipeline_id = latestPipeline.id;
+      console.log(`Found latest successful pipeline ID: ${pipeline_id}`);
 
-      // 2. Find the artifact ID by name within that run
-      console.log(`Searching for artifact named "${artifact_name}" in run ${run_id}`);
-      const artifactsResponse =
-        await GithubAPI.rest.actions.listWorkflowRunArtifacts({
-          owner,
-          repo,
-          run_id,
-        });
-      const targetArtifact = artifactsResponse.data.artifacts.find(
-        (artifact) => artifact.name === artifact_name
+      // 2. List all jobs in the pipeline to find the one with the artifact
+      console.log(`Listing jobs in pipeline ${pipeline_id} to find artifact`);
+      const jobsResponse = await GitlabAPI.Jobs.all(projectId, {
+        pipelineId: pipeline_id,
+      });
+      const targetJob = jobsResponse.find((job: any) =>
+        job.artifacts && job.artifacts.some((art: any) => art.filename === artifact_name)
       );
-      if (!targetArtifact) {
+      if (!targetJob) {
         throw new Error(
-          `Artifact named "${artifact_name}" not found in run ${run_id}`
+          `No job with artifact named "${artifact_name}" found in pipeline ${pipeline_id}`
         );
       }
-      const artifact_id = targetArtifact.id;
-      console.log(`Found artifact ID: ${artifact_id}`);
+      console.log(`Found job ID ${targetJob?.id} with artifact`);
 
-      // 3. Download the artifact
-      console.log(`Downloading artifact ID: ${artifact_id}`);
-      const downloadResponse =
-        await GithubAPI.rest.actions.downloadArtifact({
-          owner,
-          repo,
-          artifact_id,
-          archive_format: 'zip',
-        });
+      // 3. Download the artifact by job ID and filename
+      console.log(`Downloading artifact "${artifact_name}" from job ${targetJob?.id}`);
+      const downloadResponse = await GitlabAPI.JobArtifacts.downloadArchive(projectId, {
+        jobId: targetJob?.id,
+        artifactPath: artifact_name,
+        options: { responseType: 'arraybuffer' }
+      });
 
       // Check status code (assuming 200 on success after potential redirects)
       if ((downloadResponse.status as number) !== 200 || !downloadResponse.data) {
