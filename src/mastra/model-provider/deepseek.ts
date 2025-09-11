@@ -39,4 +39,4 @@ export const qwProvider = createOpenAICompatible({
   },
 });
 
-export const qwModel = qwProvider.chatModel('qwen3-max-preview');
+export const qwModel = qwProvider.chatModel('qwen-plus-latest');

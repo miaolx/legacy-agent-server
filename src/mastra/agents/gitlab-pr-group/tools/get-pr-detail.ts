@@ -34,6 +34,33 @@ const outputSchema = z.object({
   message: z.string().describe("Error message"),
 }));
 
+const countAdditions = (diff: string) => {
+  const additions = diff.match(/^\+[^+]/gm);
+  return additions ? additions.length : 0;
+}
+
+// 计算删除行数
+const countDeletions = (diff: string) =>  {
+  const deletions = diff.match(/^-[^-]/gm);
+  return deletions ? deletions.length : 0;
+}
+
+const getChangeType = (change: any) => {
+  if (change.new_path && !change.old_path) {
+    return 'added'; // 新增文件
+  } else if (!change.new_path && change.old_path) {
+    return 'removed'; // 删除文件
+  } else if (change.new_path !== change.old_path) {
+    return 'renamed'; // 重命名文件
+  } else if (change.new_file) {
+    return 'added'; // 新文件
+  } else if (change.deleted_file) {
+    return 'removed'; // 删除的文件
+  } else {
+    return 'modified'; // 修改的文件
+  }
+}
+
 export const getPrDetail = new Tool({
   id: "getPrDetail",
   description: "Fetches comprehensive details for a specific Pull Request, including metadata, associated issues, comments, a list of changed files (WITHOUT the full diff or file patches), and commit messages.", // UPDATED description
@@ -75,10 +102,10 @@ export const getPrDetail = new Tool({
       // 3. changed files
       const files = filesResponse.changes.map(f => ({
         filename: f.new_path,
-        status: f.status as 'added' | 'modified' | 'removed' | 'renamed',
-        changes: f.diff,
-        additions: f.additions,
-        deletions: f.deletions,
+        status: getChangeType(f) as 'added' | 'modified' | 'removed' | 'renamed',
+        changes: countAdditions(f.diff) + countDeletions(f.diff),
+        additions: countAdditions(f.diff),
+        deletions: countDeletions(f.diff),
       }));
 
       // 4. commits messages
