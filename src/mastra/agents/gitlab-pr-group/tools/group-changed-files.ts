@@ -27,7 +27,7 @@ const DependencyGraphSchema = z.record(
 
 // Input Schema for the Tool
 const GroupChangedFilesInputSchema = z.object({
-  changedFileList: z.array(ChangedFileSchema)
+  changedFiles: z.array(ChangedFileSchema)
     .describe("List of changed files obtained from pull request details (e.g., output of getPrDetail tool's 'files' field)."),
   dependencyGraph: DependencyGraphSchema
     .describe("The project's dependency graph (e.g., output of getGithubActionArtifactContent tool)."),
@@ -59,17 +59,19 @@ export const groupChangedFiles = new Tool({
   inputSchema: GroupChangedFilesInputSchema,
   outputSchema: GroupChangedFilesOutputSchema, // Uses the modified schema
   execute: async ({ context }: { context: z.infer<typeof GroupChangedFilesInputSchema> }): Promise<z.infer<typeof GroupChangedFilesOutputSchema>> => {
+
     // Destructure the validated input from the context
-    const { changedFileList, dependencyGraph } = context;
+    const { changedFiles, dependencyGraph } = context;
+    console.log("mlx ~ context:", context)
 
     try {
-      console.log(`Grouping ${changedFileList.length} changed files...`);
+      console.log(`Grouping ${changedFiles.length} changed files...`);
       // --- IMPORTANT --- 
       // Assuming the underlying `groupChangedFilesBasedOnDeps` function in 
       // `../../../lib/group-changed-files/index.ts` now correctly returns objects 
       // matching the NEW FileGroupSchema (with dependencies and dependents).
       const fileGroups = groupChangedFilesBasedOnDeps(
-        changedFileList,
+        changedFiles,
         dependencyGraph
       );
       console.log(`Successfully grouped files into ${fileGroups.length} groups.`);

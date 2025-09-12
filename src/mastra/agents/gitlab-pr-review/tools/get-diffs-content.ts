@@ -23,7 +23,14 @@ export const getDiffsContent = new Tool({
   }),
   outputSchema,
   execute: async ({ context }) => {
-    const { projectId, mergeRequestIid, changed_file_paths } = context;
+    console.log("getDiffsContent ~ context:", context)
+    let _context = {}
+    if(typeof context === 'string' || context instanceof String){
+      _context = JSON.parse(context?.trim().replace(/'/g, '"').replace(/(\w+):/g, '"$1":'))
+    }else {
+     _context = context 
+    }
+    const { projectId, mergeRequestIid, changed_file_paths } = _context;
 
     try {
       const filesResponse = await GitlabAPI.MergeRequests.showChanges(projectId, mergeRequestIid);

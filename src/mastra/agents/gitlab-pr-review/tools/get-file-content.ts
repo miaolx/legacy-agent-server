@@ -37,11 +37,17 @@ export const getFileContent = new Tool({
   inputSchema,
   outputSchema,
   execute: async ({ context }) => {
-    const { projectId, path, headRef } = context;
-    // console.log("🚀 ~ context:", context)
+    let _context = {}
+    if (typeof context === 'string' || context instanceof String) {
+      _context = JSON.parse(context?.trim().replace(/'/g, '"').replace(/(\w+):/g, '"$1":'))
+    } else {
+      _context = context
+    }
+    console.log("getFileContent ~ _context:", _context)
+    const { projectId, file_path, path, headRef, ref } = _context;
 
     try {
-      const response = await GitlabAPI.RepositoryFiles.show(projectId, path, headRef);
+      const response = await GitlabAPI.RepositoryFiles.show(projectId, path || file_path, headRef || ref);
 
       if (Array.isArray(response)) {
         return {
