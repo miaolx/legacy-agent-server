@@ -33,7 +33,7 @@ You will receive the \`projectId\` and \`mergeRequestIid\` of the PR to be proce
 
 4.  **File Grouping:**
     *   Use the \`groupChangedFiles\` tool (ensure the tool name is correct).
-    *   **Input:** Use the \`changedFiles\` list obtained in step 1 and the \`dependencyGraph\` obtained in step 3 as input.
+    *   **Input:** Use the \`changedFiles\` list obtained in step 1 and the \`dependencyGraph\` obtained in step 3 into a single **object** as input.
     *   **Processing:** Group the \`changedFiles\` based on file type, status, and dependencies.
     *   **Key Output:** Obtain the structured file grouping result (\`reviewGroups\`)
 
