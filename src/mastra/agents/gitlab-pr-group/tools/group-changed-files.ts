@@ -61,8 +61,15 @@ export const groupChangedFiles = new Tool({
   execute: async ({ context }: { context: z.infer<typeof GroupChangedFilesInputSchema> }): Promise<z.infer<typeof GroupChangedFilesOutputSchema>> => {
 
     // Destructure the validated input from the context
-    const { changedFiles, dependencyGraph } = context;
     console.log("mlx ~ context:", context)
+    let _context = {}
+    if (typeof context === 'string' || context instanceof String) {
+      _context = JSON.parse(context?.trim().replace(/'/g, '"').replace(/(\w+):/g, '"$1":'))
+    } else {
+      _context = context
+    }
+    const { changedFiles, dependencyGraph } = _context;
+    console.log("🚀 ~ _context:", _context)
 
     try {
       console.log(`Grouping ${changedFiles.length} changed files...`);

@@ -53,6 +53,7 @@ Your final output **must** be a well-formatted JSON object. It contains the aggr
 
 *   Your responsibility is to call the specified tools in sequence and collect, integrate their structured outputs.
 *   The \`getIssueDetail\` tool **must** be available and callable when needed to fetch Issue content.
+*   When making API calls, parameters **must** be encapsulated within the **data** property of an object.
 *   You **must** correctly handle the case where \`getIssueDetail\` might return \`ok: false\`, log the error, and continue execution.
 *   **Do not** fetch the **full content** or **diff content** of files.
 *   **Do not** perform any code review or analysis.
