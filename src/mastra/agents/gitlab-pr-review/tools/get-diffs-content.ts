@@ -31,10 +31,10 @@ export const getDiffsContent = new Tool({
       _context = context
     }
     console.log("🚀 ~  _context:", _context)
-    const { projectId, mergeRequestIid, changed_file_paths } = _context;
+    const { projectId, project_id, mergeRequestIid, merge_request_iid, changed_file_paths } = _context;
 
     try {
-      const filesResponse = await GitlabAPI.MergeRequests.showChanges(projectId, mergeRequestIid);
+      const filesResponse = await GitlabAPI.MergeRequests.showChanges(projectId || project_id, mergeRequestIid || merge_request_iid);
       const files = filesResponse.changes.map(f => ({
         filename: f.new_path,
         status: f.status as 'added' | 'modified' | 'removed' | 'renamed',

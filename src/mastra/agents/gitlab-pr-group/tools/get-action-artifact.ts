@@ -21,7 +21,7 @@ const GetGithubActionArtifactContentInputSchema = z.object({
 });
 
 
-const defaultGraph = {
+export const defaultGraph = {
   "src/mastra/function/fun1.js": {
     "dependencies": [],
     "dependents": ["src/mastra/test.js"]

@@ -3,6 +3,10 @@ import { GitlabAPI } from "../../../lib/gitlab"
 import { Tool } from "@mastra/core/tools";
 import { z } from "zod";
 
+import { defaultGraph } from './get-action-artifact'
+import { GroupChangedFilesOutputSchema } from './group-changed-files'
+import { groupChangedFilesBasedOnDeps } from '../lib/group-changed-files'; // Adjust path as necessary
+
 // Define the structure for the output
 const outputSchema = z.object({
   metadata: z.object({
@@ -28,6 +32,7 @@ const outputSchema = z.object({
     message: z.string(),
     date: z.string().nullable(),
   })).describe("Commits messages with the PR"),
+  reviewGroups: GroupChangedFilesOutputSchema,
   // rawDiff: z.string().describe("The full raw diff text for the PR."), // REMOVED rawDiff
 }).or(z.object({ // Error case
   ok: z.literal(false),
@@ -114,10 +119,17 @@ export const getPrDetail = new Tool({
         date: c.committed_date ?? null,
       }));
 
+
+      const reviewGroups = groupChangedFilesBasedOnDeps(
+        files,
+        defaultGraph
+      )
+
       return {
         metadata,
         files,
         commits,
+        reviewGroups
         // rawDiff, // REMOVED rawDiff field
       };
     } catch (error: any) {

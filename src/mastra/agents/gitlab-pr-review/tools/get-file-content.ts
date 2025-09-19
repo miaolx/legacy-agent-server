@@ -44,10 +44,10 @@ export const getFileContent = new Tool({
       _context = context
     }
     console.log("getFileContent ~ _context:", _context)
-    const { projectId, file_path, path, headRef, ref } = _context;
+    const { projectId, project_id, file_path, path, headRef, ref } = _context;
 
     try {
-      const response = await GitlabAPI.RepositoryFiles.show(projectId, path || file_path, headRef || ref);
+      const response = await GitlabAPI.RepositoryFiles.show(projectId || project_id, path || file_path, headRef || ref);
 
       if (Array.isArray(response)) {
         return {
