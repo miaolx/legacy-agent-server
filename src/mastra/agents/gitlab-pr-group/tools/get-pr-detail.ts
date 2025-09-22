@@ -3,7 +3,7 @@ import { GitlabAPI } from "../../../lib/gitlab"
 import { Tool } from "@mastra/core/tools";
 import { z } from "zod";
 
-import { defaultGraph } from './get-action-artifact'
+import { defaultGraph } from './graph'
 import { GroupChangedFilesOutputSchema } from './group-changed-files'
 import { groupChangedFilesBasedOnDeps } from '../lib/group-changed-files'; // Adjust path as necessary
 

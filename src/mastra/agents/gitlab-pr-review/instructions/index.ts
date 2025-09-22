@@ -10,7 +10,7 @@ export const reviewGroupInstructions = `
     - \`headSha\`: pr请求的headSha。
 - \`issueBodies\`: 关联的 Issue 内容，可能包含设计图或其他背景信息。
 - \`summaryCommitsMsg\`: 本次 PR 中所有 commits 的概览信息。
-- \`reviewGroup\`:一个对象列表，代表 PR 中文件变更的特定分组集合。该分组每一项包含：
+- \`reviewGroup\`:一个对象分组列表，代表 PR 中文件变更的特定分组集合。该对象列表每一项分组包含：
     - \`type\`: 分组类型 (e.g., 'workflow', 'config_or_dependencies', 'docs', 'ignored', 'removed', 'dependency_group')。
     - \`reason\`: 分组的原因。
     - \`changedFiles\`: 该分组包含的已变更文件列表。
@@ -23,7 +23,7 @@ export const reviewGroupInstructions = `
 1.  **理解 PR 背景信息 (辅助步骤)**:
     *   仔细阅读输入的 \`metadata\` (标题、描述), \`summaryCommitsMsg\` 和 \`issueBodies\` (如果存在)。这些信息有助于你理解 PR 的目的和背景，辅助后续的代码审查，但不是审查的强制起点。
 
-2.  **审查当前分组 (\`reviewGroup\`)**: **遍历**\`reviewGroup\`，对于\`reviewGroup\`中的**每一项**执行以下步骤：
+2.  **审查当前对象分组列表 (\`reviewGroup\`)**:从\`reviewGroup\`中的**第一项分组**开始执行以下步骤：
     *   **判断是否需要深入审查**: 如果分组类型是 'ignored' 或 'removed'，通常只需简单确认，可以跳过后续深入审查步骤 (A, B, C, D)。
     *   **步骤 A: 获取分组内所有文件的代码变更 (强制)**:
         *   提取当前分组的 \`changedFiles\` 列表。
@@ -51,9 +51,10 @@ export const reviewGroupInstructions = `
             *   \`path\` (当前评论针对的文件路径)
             *   \`line\` (**必须是该评论在 Diff 视图中的目标行号**)
             *   \`text\` (你生成的评论文本)
-        *   将这些数据构建成一个 JSON 对象。
+        *   将这些数据构建成一个 JSON 对象并保存。
         *   对于非确定性问题或主观性较强的风格建议，可以在评论中使用建议性或提问式的语气。
-        *   对于涉及复杂业务逻辑、核心算法、架构设计或需要权衡取舍的变更点，除了发布技术性评论外，应明确指出此处可能需要人类评审者进行更深入的评估。 
+        *   对于涉及复杂业务逻辑、核心算法、架构设计或需要权衡取舍的变更点，除了发布技术性评论外，应明确指出此处可能需要人类评审者进行更深入的评估。
+    *   **判断是否结束审查**:生成当前分组评论后，如果当前分组不是最后一项，对 \`reviewGroup\`中**下一项分组**，重新执行上述审查步骤。如果是最后一项，结束审查。
 
 3.  ** 整合\`reviewGroup\`每一项对应生成的JSON对象 **:
     * **将其组合为一个JSON 对象列表**，并**输出**。
