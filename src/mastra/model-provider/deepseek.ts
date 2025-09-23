@@ -39,4 +39,4 @@ export const qwProvider = createOpenAICompatible({
   },
 });
 
-export const qwModel = deepSeekProvider.chatModel('deepseek-chat');
+export const qwModel = qwProvider.chatModel('qwen-plus-latest');
