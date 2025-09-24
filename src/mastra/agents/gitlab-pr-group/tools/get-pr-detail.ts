@@ -3,10 +3,6 @@ import { GitlabAPI } from "../../../lib/gitlab"
 import { Tool } from "@mastra/core/tools";
 import { z } from "zod";
 
-import { defaultGraph } from './graph'
-import { GroupChangedFilesOutputSchema } from './group-changed-files'
-import { groupChangedFilesBasedOnDeps } from '../lib/group-changed-files'; // Adjust path as necessary
-
 // Define the structure for the output
 const outputSchema = z.object({
   metadata: z.object({
@@ -20,7 +16,7 @@ const outputSchema = z.object({
     headRef: z.string().describe("Head branch name"),
     headSha: z.string().describe("Head commit SHA"),
   }),
-  files: z.array(z.object({
+  changedFiles: z.array(z.object({
     filename: z.string(),
     status: z.enum(['added', 'modified', 'removed', 'renamed']),
     changes: z.number().int(),
@@ -32,7 +28,6 @@ const outputSchema = z.object({
     message: z.string(),
     date: z.string().nullable(),
   })).describe("Commits messages with the PR"),
-  reviewGroups: GroupChangedFilesOutputSchema,
   // rawDiff: z.string().describe("The full raw diff text for the PR."), // REMOVED rawDiff
 }).or(z.object({ // Error case
   ok: z.literal(false),
@@ -76,6 +71,7 @@ export const getPrDetail = new Tool({
   outputSchema,
   execute: async ({ context }) => {
     const { projectId, mergeRequestIid } = context;
+    console.log("🚀 ~ projectId, mergeRequestIid:", projectId, mergeRequestIid)
 
     try {
       // 1. Concurrently fetch PR metadata, files, and commits
@@ -121,17 +117,10 @@ export const getPrDetail = new Tool({
       }));
 
 
-      const reviewGroups = groupChangedFilesBasedOnDeps(
-        files,
-        defaultGraph
-      )
-
       return {
         metadata,
-        files,
+        changedFiles: files,
         commits,
-        reviewGroups
-        // rawDiff, // REMOVED rawDiff field
       };
     } catch (error: any) {
       console.error(`Error fetching details for PR #${mergeRequestIid} in ${projectId}:`, error);
@@ -152,49 +141,3 @@ export const getPrDetail = new Tool({
     }
   },
 });
-
-
-// Find and concurrently fetch associated issues
-const getAssociatedIssues = async (prData: any, owner: string, repo: string) => {
-  const issueRegex = /#(\d+)/g;
-  const linkedIssueNumbers = new Set<number>();
-  if (prData.body) {
-    let match;
-    while ((match = issueRegex.exec(prData.body)) !== null) {
-      linkedIssueNumbers.add(parseInt(match[1], 10));
-    }
-  }
-
-  const associatedIssues: { number: number, title: string, url: string, state: string }[] = [];
-  if (linkedIssueNumbers.size > 0) {
-    const issuePromises = Array.from(linkedIssueNumbers).map(issueNumber =>
-      GithubAPI.rest.issues.get({ owner, repo, issue_number: issueNumber })
-    );
-
-    // Use Promise.allSettled to handle both fulfilled and rejected promises
-    const issueResults = await Promise.allSettled(issuePromises);
-
-    issueResults.forEach(result => {
-      if (result.status === 'fulfilled') {
-        const issueData = result.value.data; // Access result.value.data for fulfilled promises
-        associatedIssues.push({
-          number: issueData.number,
-          title: issueData.title,
-          url: issueData.html_url,
-          state: issueData.state,
-        });
-      } else { // result.status === 'rejected'
-        // Need to extract issueNumber from the rejection reason if possible,
-        // but the original error object doesn't directly contain it.
-        // We can log the error reason directly.
-        const error = result.reason;
-        // Log the error but continue processing other issues
-        // Attempt to get more details from the error if it's an Octokit error
-        const issueNumberStr = error?.request?.url?.match(/issues\/(\d+)/)?.[1] || 'unknown';
-        console.warn(`Could not fetch details for linked issue #${issueNumberStr} in ${owner}/${repo}: ${error?.message || error}`);
-        // Optionally add a placeholder or skip the issue
-      }
-    });
-  }
-  return associatedIssues;
-}

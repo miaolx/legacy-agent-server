@@ -1,8 +1,6 @@
 import { Tool } from "@mastra/core/tools";
 import { z } from "zod";
 
-import { GroupChangedFilesOutputSchema } from '../../gitlab-pr-group/tools/group-changed-files'
-
 const outputSchema = z.object({
   metadata: z.object({
     title: z.string(),
@@ -25,12 +23,11 @@ const outputSchema = z.object({
   }),
   issueBodies: z.object({}).describe("Map from Issue number to content/null"),
   summaryCommitsMsg: z.string().describe("summary of commits message"),
-  reviewGroups: GroupChangedFilesOutputSchema
 })
 
 export const getMlxGroupJson = new Tool({
   id: 'getMlxGroupJson',
-  description: 'final output **must** be a well-formatted JSON object. It contains the aggregated PR context information: metadata, issueBodies, reviewGroups.',
+  description: 'final output **must** be a well-formatted JSON object. It contains the aggregated PR context information: metadata, issueBodies.',
   inputSchema: z.object({
     projectId: z.string().describe("The projectId of the repository"),
     mergeRequestIid: z.number().describe("The name of the mergeRequest (e.g., 1)."),

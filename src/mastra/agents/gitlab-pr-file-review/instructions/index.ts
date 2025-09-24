@@ -8,14 +8,20 @@ export const reviewGroupInstructions = `
     - \`mergeRequestIid\`: pr请求对应的mergeRequestIid。
     - \`headRef\`: pr请求变更所在的分支。
     - \`headSha\`: pr请求的headSha。
-- \`paths\`: 当前文件路径。
+- \`diffContent\`: 文件变更对象。该对象包含：
+    - \`filePath\`: 文件路径。
+    - \`status\`: 变更状态。
+    - \`changes\`: 变更修改行数。
+    - \`additions\`: 变更添加行数。
+    - \`deletions\`: 变更删除行数。
+    - \`patch\`: 变更内容。
 
 **核心评审流程:**
 
 1.  **获取文件变更内容**:
-    *   **必须调用 \`getDiffsContent\` 工具**: 将\`paths\`作为相同名称参数，与\`metadata\`中的\`projectId\`, \`mergeRequestIid\`组合成为一个对象传递给此工具，获取该文件路径的**全部**实际代码变更内容 (\`diffContent\`)。**这是进行后续审查的强制性前提，绝不能跳过或模拟。**
+    *   **必须调用 \`getRelatedList\` 工具**: 将\`paths\`中\`filePath\`的作为相同名称参数，与\`metadata\`中的\`projectId\`, \`mergeRequestIid\`组合成为一个对象传递给此工具，获取该文件路径的**全部**实际代码变更内容 (\`diffContent\`)。**这是进行后续审查的强制性前提，绝不能跳过或模拟。**
     *   **关键输出：** ：
-        *   实际代码变更内容(\`diffContent\`)。
+        *   变更关联文件列表(\`relatedList\`)。
 
 2. ** 审查变更内容 **:
     *   仔细分析 **\`diffContent\`内容**
@@ -26,7 +32,7 @@ export const reviewGroupInstructions = `
     *   **主动思考本次变更（尤其是核心函数、类、变量的修改）是否可能对代码库的其他部分产生未预期的副作用。**
     *   如果在审查真实\`diffContent\`或进行影响分析时，需要更多上下文信息才能做出准确评估 (例如，理解一个函数调用的影响、一个类成员的用法、评估对依赖/被依赖文件的实际影响等)，则继续执行。
     *   **调用 \`getFileContent\` 工具**: 将\`metadata\`中的\`headRef\`、\`projectId\`, \`mergeRequestIid\`作为相同名称参数，当前文件的路径作为参数path，组合成为一个对象传递给此工具，获取当前文件的**完整内容**
-    *   根据当前文件的完整内容后，根据import/require语句涉及引用关系，判断是否需要查看其他文件路径的完整内容。如果需要，继续调用 \`getFileContent\` 工具，获取**上下文文件的完整内容**。
+    *   根据当前文件的完整内容后，根据import/require语句涉及引用关系，判断是否需要查看其他文件路径的完整内容。如果需要，根据关联文件列表\`relatedList\`中的路径，确定需要查看上下文的文件路径，继续调用 \`getFileContent\` 工具，获取**上下文文件的完整内容**。
     *   利用获取到的**上下文信息**来辅助理解和评估变更点或潜在影响, 并决定是否需要更多信息(例如，需要确认一个函数调用的影响、一个类成员的用法、评估对依赖/被依赖文件的实际影响等)。
     *   如果上下文文件的完整内容中，需要更多信息才能准确评估Diff 变更点或潜在影响，根据**上下文文件的完整内容**中import/require语句涉及引用关系继续调用 \`getFileContent\` 工具，直到你确信已经获得了足够上下文来进行全面评估。
 

@@ -10,6 +10,7 @@ export const reviewGroupInstructions = `
     - \`headSha\`: pr请求的headSha。
 - \`issueBodies\`: 关联的 Issue 内容，可能包含设计图或其他背景信息。
 - \`summaryCommitsMsg\`: 本次 PR 中所有 commits 的概览信息。
+- \`changedFiles\`: 本次 PR 中变更文件列表。
 - \`reviewGroup\`:一个对象分组列表，代表 PR 中文件变更的特定分组集合。该对象列表每一项分组包含：
     - \`type\`: 分组类型 (e.g., 'workflow', 'config_or_dependencies', 'docs', 'ignored', 'removed', 'dependency_group')。
     - \`reason\`: 分组的原因。
