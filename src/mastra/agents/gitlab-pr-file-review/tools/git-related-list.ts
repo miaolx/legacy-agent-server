@@ -12,6 +12,7 @@ export const getRelatedList = new Tool({
     projectId: z.string().describe("The projectId of the repository"),
     mergeRequestIid: z.number().describe("The name of the mergeRequest (e.g., 1)."),
     filePath: z.string().describe("The path of the file to get the diff content."),
+    patch: z.string().optional().describe("Raw patch text provided by Gitlab"), // REMOVED patch
   }),
   outputSchema,
   execute: async ({ context }) => {
@@ -21,7 +22,7 @@ export const getRelatedList = new Tool({
     } else {
       _context = context
     }
-    const { projectId, project_id, mergeRequestIid, merge_request_iid, filePath } = _context;
+    const { projectId, project_id, mergeRequestIid, merge_request_iid, filePath, patch } = _context;
 
     try {
 
@@ -33,7 +34,7 @@ export const getRelatedList = new Tool({
         },
 
         body: JSON.stringify({
-          message: `获取${filePath}文件在项目中依赖与被依赖的文件路径，用列表格式返回`
+          message: `在文件${filePath}中变更内容为${patch},请提供与该变更内容可能存在关联的代码路径`
         }),
       });
 

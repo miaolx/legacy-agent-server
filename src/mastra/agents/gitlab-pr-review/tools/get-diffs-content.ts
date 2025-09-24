@@ -5,16 +5,14 @@ import { z } from "zod";
 import { countAdditions, countDeletions, getChangeType } from '../../gitlab-pr-group/tools/get-pr-detail'
 
 const outputSchema = z.object({
-  diffFilesContent: z.array(z.object({
-    filename: z.string(),
-    status: z.enum(['added', 'modified', 'removed', 'renamed']),
-    changes: z.number().int(),
-    additions: z.number().int(),
-    deletions: z.number().int(),
-    patch: z.string().optional().describe("Raw patch text provided by Gitlab"),
-  })).describe('The diff content of the changed files in the pull request.'),
-  relatedList: z.array(z.string()).describe('Related filePath of the input paths'),
-})
+  filename: z.string(),
+  status: z.enum(['added', 'modified', 'removed', 'renamed']),
+  changes: z.number().int(),
+  additions: z.number().int(),
+  deletions: z.number().int(),
+  patch: z.string().optional().describe("Raw patch text provided by Gitlab"),
+}).describe('The diff content of the changed files in the pull request.')
+
 
 export const getDiffsContent = new Tool({
   id: "getDiffsContent",
@@ -22,7 +20,7 @@ export const getDiffsContent = new Tool({
   inputSchema: z.object({
     projectId: z.string().describe("The projectId of the repository"),
     mergeRequestIid: z.number().describe("The name of the mergeRequest (e.g., 1)."),
-    paths: z.array(z.string()).describe("The path of the file to get the diff content."),
+    paths: z.string().describe("The path of the file to get the diff content."),
   }),
   outputSchema,
   execute: async ({ context }) => {
@@ -39,26 +37,21 @@ export const getDiffsContent = new Tool({
     try {
       const filesResponse = await GitlabAPI.MergeRequests.showChanges(projectId || project_id, mergeRequestIid || merge_request_iid);
 
-      const files = filesResponse?.changes.map(f => ({
-        filename: f.new_path,
-        status: getChangeType(f) as 'added' | 'modified' | 'removed' | 'renamed',
-        changes: countAdditions(f.diff) + countDeletions(f.diff),
-        additions: countAdditions(f.diff),
-        deletions: countDeletions(f.diff),
-        patch: f.diff
-      }));
+      const filteredFiles = filesResponse?.changes.filter(f => paths.includes(f.new_path))?.[0];
 
-      const filteredFiles = files.filter(f => paths.includes(f.filename));
+      const files = {
+        filename: filteredFiles.new_path,
+        status: getChangeType(filteredFiles) as 'added' | 'modified' | 'removed' | 'renamed',
+        changes: countAdditions(filteredFiles.diff) + countDeletions(filteredFiles.diff),
+        additions: countAdditions(filteredFiles.diff),
+        deletions: countDeletions(filteredFiles.diff),
+        patch: filteredFiles.diff
+      }
 
-      return {
-        diffFilesContent: filteredFiles,
-      };
+      return files;
     } catch (error) {
       console.error(error);
-      return {
-        diffFilesContent: [],
-        relatedList: []
-      };
+      return {};
     }
   },
 });
