@@ -1,6 +1,6 @@
 import { Agent } from "@mastra/core/agent";
 
-import { dzhModel } from '../../model-provider/deepseek';
+import { dzhModel, qwModel } from '../../model-provider/deepseek';
 import { reviewGroupInstructions } from "./instructions";
 import { getFileContent } from "../gitlab-pr-review/tools/get-file-content";
 import { getDiffsContent } from "../gitlab-pr-review/tools/get-diffs-content";

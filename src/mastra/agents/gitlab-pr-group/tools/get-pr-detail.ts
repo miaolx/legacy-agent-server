@@ -26,7 +26,7 @@ const outputSchema = z.object({
     changes: z.number().int(),
     additions: z.number().int(),
     deletions: z.number().int(),
-    // patch: z.string().optional().describe("Raw patch text provided by GitHub"), // REMOVED patch
+    patch: z.string().optional().describe("Raw patch text provided by Gitlab"), // REMOVED patch
   })).describe("Files changed in the PR (metadata only, no patch content)"),
   commits: z.array(z.object({
     message: z.string(),
@@ -39,18 +39,18 @@ const outputSchema = z.object({
   message: z.string().describe("Error message"),
 }));
 
-const countAdditions = (diff: string) => {
+export const countAdditions = (diff: string) => {
   const additions = diff.match(/^\+[^+]/gm);
   return additions ? additions.length : 0;
 }
 
 // 计算删除行数
-const countDeletions = (diff: string) =>  {
+export const countDeletions = (diff: string) =>  {
   const deletions = diff.match(/^-[^-]/gm);
   return deletions ? deletions.length : 0;
 }
 
-const getChangeType = (change: any) => {
+export const getChangeType = (change: any) => {
   if (change.new_path && !change.old_path) {
     return 'added'; // 新增文件
   } else if (!change.new_path && change.old_path) {
@@ -111,6 +111,7 @@ export const getPrDetail = new Tool({
         changes: countAdditions(f.diff) + countDeletions(f.diff),
         additions: countAdditions(f.diff),
         deletions: countDeletions(f.diff),
+        patch: f.diff
       }));
 
       // 4. commits messages
