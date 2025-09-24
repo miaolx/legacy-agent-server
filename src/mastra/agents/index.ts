@@ -1,48 +1,16 @@
-// 示例 agent
-import { weatherAgent, githubTokenAgent } from './example';
-
-// 与GitHub仓库聊天 github codebase
-import { githubCodebaseAgent } from './github-codebase';
-
-// GitHub Code Review Agent
-import { codeReviewAgent } from './github-code-review';
-
-// GitHub Diff Review Agent
-import { githubDiffReviewAgent } from './github-diff-review';
-
-// GitHub PR Groups Builder Agent
-import { prGroupsBuilderAgent } from './github-pr-groups-builder';
-
-// GitHub Review Group Agent
-import { reviewGroupAgent } from './github-review-group';
-
 import { gitlabReviewSingleAgent } from './gitlab-pr-file-review'
 
 import { gitlabPrGroupsBuilderAgent } from './gitlab-pr-group';
 
 import { gitlabReviewGroupAgent } from './gitlab-pr-review';
 
-// MLX Test Review Group Agent
-import { mlxCodeReviewAgent } from './mlx-code-review';
-
 import { mlxGitlabCodeReviewAgent } from './mlx-gitlab-code-review'
-
-// Personal Dev Assistant Agent
-// import { personalDevAssistantAgent } from './personalDevAssistant';
 
 // 注册到 mastra 的 agents
 export const agents = {
-  weatherAgent,
-  githubTokenAgent,
-  githubCodebaseAgent,
-  codeReviewAgent,
-  githubDiffReviewAgent,
-  prGroupsBuilderAgent,
-  reviewGroupAgent,
-  mlxCodeReviewAgent,
   gitlabReviewSingleAgent,
   gitlabPrGroupsBuilderAgent,
   gitlabReviewGroupAgent,
   mlxGitlabCodeReviewAgent,
-  // personalDevAssistantAgent,
+
 };

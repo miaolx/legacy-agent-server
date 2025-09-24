@@ -1,7 +1,7 @@
 import { Tool } from "@mastra/core/tools";
 import { z } from "zod";
 
-import { GroupChangedFilesOutputSchema } from '../../github-pr-groups-builder/tools/group-changed-files'
+import { GroupChangedFilesOutputSchema } from '../../gitlab-pr-group/tools/group-changed-files'
 
 const outputSchema = z.object({
   metadata: z.object({
