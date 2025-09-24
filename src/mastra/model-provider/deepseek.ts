@@ -23,7 +23,7 @@ export const dzhProvider = createOpenAICompatible({
   baseURL: 'http://10.15.97.68:7010/v1',
   name: 'Dify',
   headers: {
-    Authorization: `Bearer http://10.99.32.62/v1|app-R1XZGqOy9ufDvUrIbCMcoRvY|Chat`,
+    Authorization: `Bearer http://10.17.107.55/v1|app-VX835JVqvzU7pqwI11MQgML7|Chat`,
   },
 });
 

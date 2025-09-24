@@ -27,7 +27,7 @@ export const reviewGroupInstructions = `
     *   **判断是否需要深入审查**: 如果分组类型是 'ignored' 或 'removed'，通常只需简单确认，可以跳过后续深入审查步骤 (A, B, C, D)。
     *   **步骤 A: 获取分组内所有文件的代码变更 (强制)**:
         *   提取当前分组的 \`changedFiles\` 列表。
-        *   **必须调用 \`getDiffsContent\` 工具**: 将该分组的 \`changedFiles\` 列表通过参数\`changed_file_paths\`，与\`metadata\`中的\`projectId\`, \`mergeRequestIid\`组合成为一个对象传递给此工具，获取这些文件的**全部**实际代码变更内容 (Diff)。**这是进行后续审查的强制性前提，绝不能跳过或模拟。**
+        *   **必须调用 \`getDiffsContent\` 工具**: 将该分组的 \`changedFiles\` 列表通过参数\`paths\`，与\`metadata\`中的\`projectId\`, \`mergeRequestIid\`组合成为一个对象传递给此工具，获取这些文件的**全部**实际代码变更内容 (Diff)。**这是进行后续审查的强制性前提，绝不能跳过或模拟。**
     *   **步骤 B: 审查实际 Diff 内容 (基于步骤 A 的输出)**:
         *   仔细分析 **步骤 A 中 \`getDiffsContent\` 工具返回的该分组所有文件的真实 Diff 内容**。
         *   根据分组的 \`type\` 和 \`reason\` 应用恰当的审查视角和标准。

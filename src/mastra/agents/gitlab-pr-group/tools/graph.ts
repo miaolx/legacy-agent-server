@@ -432,3 +432,13 @@ export const defaultGraph = {
     ]
   }
 }
+
+const input =  {
+  "metaData":{
+    "projectId": "200", 
+    "mergeRequestIid": 21024,
+    "headRef": "cherry-pick-5746d578",
+    "headSha": "8d5d98a7ce40abb10fabbfc4fb92a39dc11d9a40"
+  },
+  "paths":"src/pages/enterprise/bigArticleRecognize/components/ResultModal/hooks/useData.ts"
+}

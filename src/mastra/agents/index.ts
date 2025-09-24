@@ -16,6 +16,8 @@ import { prGroupsBuilderAgent } from './github-pr-groups-builder';
 // GitHub Review Group Agent
 import { reviewGroupAgent } from './github-review-group';
 
+import { gitlabReviewSingleAgent } from './gitlab-pr-file-review'
+
 import { gitlabPrGroupsBuilderAgent } from './gitlab-pr-group';
 
 import { gitlabReviewGroupAgent } from './gitlab-pr-review';
@@ -38,6 +40,7 @@ export const agents = {
   prGroupsBuilderAgent,
   reviewGroupAgent,
   mlxCodeReviewAgent,
+  gitlabReviewSingleAgent,
   gitlabPrGroupsBuilderAgent,
   gitlabReviewGroupAgent,
   mlxGitlabCodeReviewAgent,

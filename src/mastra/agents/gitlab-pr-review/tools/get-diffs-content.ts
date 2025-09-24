@@ -19,7 +19,7 @@ export const getDiffsContent = new Tool({
   inputSchema: z.object({
     projectId: z.string().describe("The projectId of the repository"),
     mergeRequestIid: z.number().describe("The name of the mergeRequest (e.g., 1)."),
-    changed_file_paths: z.array(z.string()).describe("The path of the file to get the diff content."),
+    paths: z.array(z.string()).describe("The path of the file to get the diff content."),
   }),
   outputSchema,
   execute: async ({ context }) => {
@@ -31,7 +31,7 @@ export const getDiffsContent = new Tool({
       _context = context
     }
     console.log("🚀 ~  _context:", _context)
-    const { projectId, project_id, mergeRequestIid, merge_request_iid, changed_file_paths } = _context;
+    const { projectId, project_id, mergeRequestIid, merge_request_iid, paths } = _context;
 
     try {
       const filesResponse = await GitlabAPI.MergeRequests.showChanges(projectId || project_id, mergeRequestIid || merge_request_iid);
@@ -44,7 +44,7 @@ export const getDiffsContent = new Tool({
         patch: f.patch
       }));
 
-      const filteredFiles = files.filter(f => changed_file_paths.includes(f.filename));
+      const filteredFiles = files.filter(f => paths.includes(f.filename));
 
       return {
         diff_files_content: filteredFiles,
