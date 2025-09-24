@@ -1,0 +1,58 @@
+{
+  "metadata": {
+    "title": "feat: 多组内容测试大模型mr评审效果-无需合并到dev (story#48511)",
+    "description": "(cherry picked from commit 5746d578bdac5d5d167e077e66d4215a02bb6faa)",
+    "author": "miaolx",
+    "url": "https://git.finchina.com/front-end-html/pc_qyyjt_multiple_tab_project/merge_requests/21024",
+    "state": "opened",
+    "number": 21024,
+    "baseRef": "dev",
+    "headRef": "cherry-pick-5746d578",
+    "headSha": "8d5d98a7ce40abb10fabbfc4fb92a39dc11d9a40",
+    "projectId": "200",
+    "mergeRequestIid": 21024
+  },
+  "summaryCommitsMsg": "feat: 多组内容测试大模型mr评审效果-无需合并到dev (story#48511)",
+  "changedFiles": [
+    {
+      "filename": "src/pages/enterprise/bigArticleRecognize/components/ResultModal/hooks/useColumns.tsx",
+      "status": "modified",
+      "changes": 2,
+      "additions": 1,
+      "deletions": 1,
+      "patch": "@@ -168,7 +168,7 @@ const useColumns = (Props: Props) => {\n row.dataCategory === '1' ? (\n '-'\n ) : (\n- <span className="link-underline" onClick={() => openSourceDetail(row)}>\n+ <span className="link-underline" onClick={openSourceDetail(row)}>\n 详情\n \n ),\n"
+    },
+    {
+      "filename": "src/pages/enterprise/bigArticleRecognize/components/ResultModal/hooks/useData.ts",
+      "status": "modified",
+      "changes": 8,
+      "additions": 4,
+      "deletions": 4,
+      "patch": "@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';\n \n import { useMemoizedFn, useUpdateEffect } from 'ahooks';\n import { pick, isEqual } from 'lodash';\n-import shortId from 'shortid';\n+// import shortId from 'shortid';\n \n import { getFiveArticleFirmList, getAddHistoryRecord } from '@/pages/enterprise/bigArticleRecognize/api';\n import useHistory from '@/pages/enterprise/bigArticleRecognize/hooks/useHistoryList';\n@@ -49,7 +49,7 @@ interface resultType {\n tableTotal: number;\n keyword: string;\n currentPage: number;\n- screenKey: string;\n+ // screenKey: string;\n lastChange: string; // 判断上一个修改的内容\n }\n \n@@ -71,7 +71,7 @@ const useData = () => {\n tableTotal: 0,\n keyword: '',\n currentPage: 1,\n- screenKey: shortId(),\n+ // screenKey: shortId(),\n lastChange: '',\n });\n const [params, setParams] = useImmer(defaultParams);\n@@ -342,7 +342,7 @@ const useData = () => {\n d.sort = '';\n });\n setResultData((d) => {\n- d.screenKey = shortId();\n+ // d.screenKey = shortId();\n d.currentPage = 1;\n d.keyword = '';\n });\n"
+    },
+    {
+      "filename": "src/pages/enterprise/bigArticleRecognize/components/SourceModal/index.tsx",
+      "status": "modified",
+      "changes": 4,
+      "additions": 2,
+      "deletions": 2,
+      "patch": "@@ -19,7 +19,7 @@ interface Props {\n const ResultModal = (Props: Props) => {\n const { visible, closeModal } = Props;\n \n- const { data: sourceData, firstLoading, loading } = useData();\n+ const { data: sourceData, firstLoading, tableLoading } = useData();\n \n const { proBaseInfo, modalTitle, type } = useTableConf({\n dataList: sourceData,\n@@ -38,7 +38,7 @@ const ResultModal = (Props: Props) => {\n wrapClassName={S['source-modal-wrapper']}\n getContainer={() => document.getElementById('article-modal-container') || document.body}\n >\n- <Spin spinning={firstLoading || loading} translucent={false} type="thunder">\n+ <Spin spinning={firstLoading || tableLoading} translucent={false} type="thunder">\n {type === FinanceTemplateType.Bond ? (\n {proBaseInfo}\n ) : proBaseInfo?.length ? (\n"
+    },
+    {
+      "filename": "src/pages/enterprise/bigArticleRecognize/components/SourceModal/useData.ts",
+      "status": "modified",
+      "changes": 4,
+      "additions": 2,
+      "deletions": 2,
+      "patch": "@@ -26,7 +26,7 @@ const useData = () => {\n });\n \n useEffect(() => {\n- const { itCode2, secType, tagCodeLevel1, tagCodeLevel2, tagCodeS } = sourceModalConfig;\n+ const { itCode2, type, tagCodeLevel1, tagCodeLevel2, tagCodeS } = sourceModalConfig;\n if (activeTab === ActiveTabType.Company) {\n run({\n itCode2,\n@@ -35,7 +35,7 @@ const useData = () => {\n tagCodeS,\n });\n } else {\n- if (secType === FinanceTemplateType.Stock) {\n+ if (type === FinanceTemplateType.Stock) {\n run({\n itCode2,\n tagCodeLevel1,\n"
+    },
+    {
+      "filename": "src/pages/enterprise/bigArticleRecognize/components/SourceModal/useTableConf.tsx",
+      "status": "modified",
+      "changes": 2,
+      "additions": 1,
+      "deletions": 1,
+      "patch": "@@ -151,7 +151,7 @@ export const useTableConf = (props: Props) => {\n ];\n \n const proBaseList =\n- dataList?.map((data: any) => {\n+ dataList.map((data: any) => {\n const businessRange = data?.businessRange || sourceModalConfig?.businessRange;\n switch (templateType) {\n case TemplateType.Template1:\n"
+    }
+  ]
+}

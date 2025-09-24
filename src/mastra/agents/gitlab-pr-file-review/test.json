@@ -1,0 +1,17 @@
+{
+  "metadata": {
+    "projectId": "200",
+    "mergeRequestIid": 21024,
+    "headRef": "cherry-pick-5746d578",
+    "headSha": "8d5d98a7ce40abb10fabbfc4fb92a39dc11d9a40"
+  },
+  "summaryCommitsMsg": "feat: 多组内容测试大模型mr评审效果-无需合并到dev (story#48511)",
+  "diffContent": {
+    "filename": "src/pages/enterprise/bigArticleRecognize/components/ResultModal/hooks/useData.ts",
+    "status": "modified",
+    "changes": 8,
+    "additions": 4,
+    "deletions": 4,
+    "patch": "@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';\n \n import { useMemoizedFn, useUpdateEffect } from 'ahooks';\n import { pick, isEqual } from 'lodash';\n-import shortId from 'shortid';\n+// import shortId from 'shortid';\n \n import { getFiveArticleFirmList, getAddHistoryRecord } from '@/pages/enterprise/bigArticleRecognize/api';\n import useHistory from '@/pages/enterprise/bigArticleRecognize/hooks/useHistoryList';\n@@ -49,7 +49,7 @@ interface resultType {\n tableTotal: number;\n keyword: string;\n currentPage: number;\n- screenKey: string;\n+ // screenKey: string;\n lastChange: string; // 判断上一个修改的内容\n }\n \n@@ -71,7 +71,7 @@ const useData = () => {\n tableTotal: 0,\n keyword: '',\n currentPage: 1,\n- screenKey: shortId(),\n+ // screenKey: shortId(),\n lastChange: '',\n });\n const [params, setParams] = useImmer(defaultParams);\n@@ -342,7 +342,7 @@ const useData = () => {\n d.sort = '';\n });\n setResultData((d) => {\n- d.screenKey = shortId();\n+ // d.screenKey = shortId();\n d.currentPage = 1;\n d.keyword = '';\n });\n"
+  }
+}

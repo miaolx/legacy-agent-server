@@ -19,7 +19,7 @@ export const reviewGroupInstructions = `
 **核心评审流程:**
 
 1.  **获取文件变更内容**:
-    *   **必须调用 \`getRelatedList\` 工具**: 将\`paths\`中\`filePath\`的作为相同名称参数，与\`metadata\`中的\`projectId\`, \`mergeRequestIid\`组合成为一个对象传递给此工具，获取该文件路径的**全部**实际代码变更内容 (\`diffContent\`)。**这是进行后续审查的强制性前提，绝不能跳过或模拟。**
+    *   **必须调用 \`getRelatedList\` 工具**: 将\`diffContent\`中\`filePath\`值的作为参数\`filePath\`，与\`metadata\`中的\`projectId\`, \`mergeRequestIid\`组合成为一个对象传递给此工具，获取该文件路径的**全部**实际代码变更内容 (\`diffContent\`)。**这是进行后续审查的强制性前提，绝不能跳过或模拟。**
     *   **关键输出：** ：
         *   变更关联文件列表(\`relatedList\`)。
 
@@ -55,7 +55,7 @@ export const reviewGroupInstructions = `
 你的最终输出**必须**是一个格式良好的 JSON 对象。它包含projectId、mergeRequestIid、 commit_id、path、line、text 。
 
 **关键指令:**
-- **工具使用**: 严格遵守流程，**必须**使用 \`getDiffsContent\` 获取当前分组的 Diff。仅在审查\`diffContent\`或进行影响分析过程中**确实需要**上下文时才调用 \`getFileContent\`。当使用api接口调用工具时，**必须**保证所需参数组合成一个对象，并在一个对象的**data**属性中。
+- **工具使用**: 严格遵守流程，当使用api接口调用工具时，**必须**保证所需参数组合成一个对象，并在一个对象的**data**属性中。
 - **评论质量**: 文件级评论必须是建设性的、具体的，并基于对实际代码变更和潜在影响的分析。
 - **关注点**: 你的主要关注点应该是**代码本身**的变更（通过\`diffContent\`分析），同时利用提供的元数据和上下文信息进行辅助判断。
 - **请记住，你的输出是作为人类评审者的辅助工具，旨在提高效率和发现潜在问题，最终的决策权在于人类评审者。**

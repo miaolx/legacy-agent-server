@@ -11,7 +11,7 @@ export const getRelatedList = new Tool({
   inputSchema: z.object({
     projectId: z.string().describe("The projectId of the repository"),
     mergeRequestIid: z.number().describe("The name of the mergeRequest (e.g., 1)."),
-    filePath: z.array(z.string()).describe("The path of the file to get the diff content."),
+    filePath: z.string().describe("The path of the file to get the diff content."),
   }),
   outputSchema,
   execute: async ({ context }) => {
@@ -33,7 +33,7 @@ export const getRelatedList = new Tool({
         },
 
         body: JSON.stringify({
-          message: `获取${filePath}文件在mergeRequestIid为${mergeRequestIid}合并请求中的修改内容，依赖与被依赖的文件路径，用列表格式返回`
+          message: `获取${filePath}文件在项目中依赖与被依赖的文件路径，用列表格式返回`
         }),
       });
 
@@ -47,7 +47,7 @@ export const getRelatedList = new Tool({
       console.log("🚀 ~ relatedList", relatedList)
 
       return {
-        relatedList: relatedList
+        relatedList: response
       };
     } catch (error) {
       console.error(error);

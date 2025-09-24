@@ -49,31 +49,9 @@ export const getDiffsContent = new Tool({
       }));
 
       const filteredFiles = files.filter(f => paths.includes(f.filename));
-      
-      // const relatedFiles = await fetch('http://10.15.97.188:8000/api/chat_with_system', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     'Accept': 'application/json',
-      //   },
-
-      //   body: JSON.stringify({
-      //     message: `获取${paths}文件在mergeRequestIid为${mergeRequestIid}合并请求中的修改内容，依赖与被依赖的文件路径，用列表格式返回`
-      //   }),
-      // });
-
-      // const { response } = await relatedFiles.json();
-
-      // const str = 'src/'
-
-      // const relatedList = response?.split('\n')
-      //   .filter(line => line.trim()) // 过滤空行
-      //   .map(line => line.replace(/^- /, '').trim()).filter(line => line.includes(str))
-      // console.log("🚀 ~ relatedList", relatedList)
 
       return {
         diffFilesContent: filteredFiles,
-        // relatedList: relatedList
       };
     } catch (error) {
       console.error(error);
