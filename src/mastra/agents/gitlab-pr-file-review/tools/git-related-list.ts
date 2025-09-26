@@ -16,12 +16,14 @@ export const getRelatedList = new Tool({
   }),
   outputSchema,
   execute: async ({ context }) => {
+    console.log("🚀 ~ context:", context)
     let _context = {}
     if (typeof context === 'string' || context instanceof String) {
-      _context = JSON.parse(context?.trim().replace(/'/g, '"').replace(/(\w+):/g, '"$1":'))
+      _context = JSON.parse(context?.trim().replace(/\n/g, '\\\\n').replace(/'/g, '"'))
     } else {
       _context = context
     }
+    console.log("🚀 ~ _context:", _context)
     const { projectId, project_id, mergeRequestIid, merge_request_iid, filePath, patch } = _context;
 
     try {
@@ -40,12 +42,12 @@ export const getRelatedList = new Tool({
 
       const { response } = await relatedFiles.json();
 
-      const str = 'src/'
+      // const str = 'src/'
 
-      const relatedList = response?.split('\n')
-        .filter(line => line.trim()) // 过滤空行
-        .map(line => line.replace(/^- /, '').trim()).filter(line => line.includes(str))
-      console.log("🚀 ~ relatedList", relatedList)
+      // const relatedList = response?.split('\n')
+      //   .filter(line => line.trim()) // 过滤空行
+      //   .map(line => line.replace(/^- /, '').trim()).filter(line => line.includes(str))
+      // console.log("🚀 ~ relatedList", relatedList)
 
       return {
         relatedList: response
