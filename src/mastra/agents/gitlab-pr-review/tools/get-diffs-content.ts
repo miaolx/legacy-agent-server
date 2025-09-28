@@ -26,7 +26,7 @@ export const getDiffsContent = new Tool({
   outputSchema,
   execute: async ({ context }) => {
     console.log("getDiffsContent ~ context:", context)
-    let _context = {}
+    let _context: any = {}
     if (typeof context === 'string' || context instanceof String) {
       _context = JSON.parse(context?.trim().replace(/'/g, '"').replace(/(\w+):/g, '"$1":'))
     } else {
@@ -36,12 +36,16 @@ export const getDiffsContent = new Tool({
     const { projectId, project_id, mergeRequestIid, merge_request_iid, paths } = _context;
 
     let relatedList = ''
+    let filteredFiles: any = { diff: ''}
 
     try {
       const filesResponse = await GitlabAPI.MergeRequests.showChanges(projectId || project_id, mergeRequestIid || merge_request_iid);
+      filteredFiles = filesResponse?.changes.filter(f => paths.includes(f.new_path))?.[0];
+    } catch (error) {
+      console.error(error);
+    }
 
-      const filteredFiles = filesResponse?.changes.filter(f => paths.includes(f.new_path))?.[0];
-
+    try {
       const relatedFiles = await fetch('http://10.15.97.188:8000/api/chat_with_system', {
         method: 'POST',
         headers: {
@@ -56,25 +60,24 @@ export const getDiffsContent = new Tool({
 
       const { response, status } = await relatedFiles.json();
 
-      if(status === 'success'){
+      if (status === 'success') {
         relatedList = response
       }
-
-      const files = {
-        filename: filteredFiles.new_path,
-        status: getChangeType(filteredFiles) as 'added' | 'modified' | 'removed' | 'renamed',
-        changes: countAdditions(filteredFiles.diff) + countDeletions(filteredFiles.diff),
-        additions: countAdditions(filteredFiles.diff),
-        deletions: countDeletions(filteredFiles.diff),
-        patch: filteredFiles.diff,
-        relatedList: relatedList
-      }
-
-      return files;
     } catch (error) {
       console.error(error);
-      return {};
     }
+
+    const files = {
+      filename: filteredFiles.new_path,
+      status: getChangeType(filteredFiles) as 'added' | 'modified' | 'removed' | 'renamed',
+      changes: countAdditions(filteredFiles.diff) + countDeletions(filteredFiles.diff),
+      additions: countAdditions(filteredFiles.diff),
+      deletions: countDeletions(filteredFiles.diff),
+      patch: filteredFiles.diff,
+      relatedList: relatedList
+    }
+
+    return files
   },
 });
 

@@ -24,8 +24,7 @@ const outputSchema = z.object({
     changes: z.number().int(),
     additions: z.number().int(),
     deletions: z.number().int(),
-    parse: z.array(z.object({}))
-    // patch: z.string().optional().describe("Raw patch text provided by Gitlab"), // REMOVED patch
+    patch: z.string().optional().describe("Raw patch text provided by Gitlab"), // REMOVED patch
   })).describe("Files changed in the PR (metadata only, no patch content)"),
   commits: z.array(z.object({
     message: z.string(),
@@ -62,80 +61,6 @@ export const getChangeType = (change: any) => {
   } else {
     return 'modified'; // 修改的文件
   }
-}
-
-const getLineType = (line: string) => {
-    if (line.startsWith(' ')) return 'context';
-    if (line.startsWith('-')) return 'deletion';
-    if (line.startsWith('+')) return 'addition';
-    if (line.startsWith('\\')) return 'no-newline';
-    return 'header';
-}
-
-const parseSingleDiff = (diffContent: string) => {
-  const lines = diffContent.split('\n');
-  const result: any = [];
-  let oldLineNumber: any = null;
-  let newLineNumber: any = null;
-  let currentHunk: any = null;
-
-  lines.forEach((line, index) => {
-    if (line.startsWith('@@')) {
-      // 解析 hunk 头部，例如：@@ -1,5 +1,6 @@
-      const hunkMatch = line.match(/@@ \-(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/);
-      if (hunkMatch) {
-        oldLineNumber = parseInt(hunkMatch[1]);
-        newLineNumber = parseInt(hunkMatch[3]);
-
-        currentHunk = {
-          old_start: oldLineNumber,
-          new_start: newLineNumber,
-          old_lines: hunkMatch[2] ? parseInt(hunkMatch[2]) : 1,
-          new_lines: hunkMatch[4] ? parseInt(hunkMatch[4]) : 1,
-          lines: []
-        };
-      }
-    } else if (currentHunk) {
-      const lineType = getLineType(line);
-      const content = line.substring(1); // 移除前缀字符
-
-      const lineInfo = {
-        type: lineType,
-        content: content,
-        old_line: null,
-        new_line: null,
-        line_number: index + 1
-      };
-
-      switch (lineType) {
-        case 'context':
-          lineInfo.old_line = oldLineNumber;
-          lineInfo.new_line = newLineNumber;
-          oldLineNumber++;
-          newLineNumber++;
-          break;
-
-        case 'deletion':
-          lineInfo.old_line = oldLineNumber;
-          oldLineNumber++;
-          break;
-
-        case 'addition':
-          lineInfo.new_line = newLineNumber;
-          newLineNumber++;
-          break;
-
-        case 'no-newline':
-          // 特殊标记，不增加行号
-          break;
-      }
-
-      currentHunk.lines.push(lineInfo);
-      result.push(lineInfo);
-    }
-  });
-
-  return result;
 }
 
 export const getPrDetail = new Tool({
@@ -186,8 +111,7 @@ export const getPrDetail = new Tool({
         changes: countAdditions(f.diff) + countDeletions(f.diff),
         additions: countAdditions(f.diff),
         deletions: countDeletions(f.diff),
-        parse: parseSingleDiff(f.diff)
-        // patch: f.diff
+        patch: f.diff
       }));
 
       // 4. commits messages
