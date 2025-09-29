@@ -14,6 +14,18 @@ const outputSchema = z.object({
   relatedList: z.string().describe('Related filePath of the input filePath'),
 }).describe('The diff content of the changed files in the pull request.')
 
+const extractDiffs = (diffContent: string) => {
+  /**
+   * Extract multiple diffs and convert them into a diff array
+   * 提取多个diff转成diff数组
+   */
+
+  // 使用正则表达式来匹配diff数据块
+  const diffPattern = /@@ -\d+,\d+ \+\d+,\d+ @@.*?(?=\n@@|$)/gs;
+  const diffs = diffContent.match(diffPattern) || [];
+  return diffs;
+}
+
 
 export const getDiffsContent = new Tool({
   id: "getDiffsContent",
@@ -22,6 +34,7 @@ export const getDiffsContent = new Tool({
     projectId: z.string().describe("The projectId of the repository"),
     mergeRequestIid: z.number().describe("The name of the mergeRequest (e.g., 1)."),
     paths: z.string().describe("The path of the file to get the diff content."),
+    diffIndex: z.number().describe("The index of the chunk in the diff content."),
   }),
   outputSchema,
   execute: async ({ context }) => {
@@ -33,10 +46,10 @@ export const getDiffsContent = new Tool({
       _context = context
     }
     console.log("🚀 ~  _context:", _context)
-    const { projectId, project_id, mergeRequestIid, merge_request_iid, paths } = _context;
+    const { projectId, project_id, mergeRequestIid, merge_request_iid, paths, diffIndex } = _context;
 
     let relatedList = ''
-    let filteredFiles: any = { diff: ''}
+    let filteredFiles: any = { diff: '' }
 
     try {
       const filesResponse = await GitlabAPI.MergeRequests.showChanges(projectId || project_id, mergeRequestIid || merge_request_iid);
@@ -45,7 +58,13 @@ export const getDiffsContent = new Tool({
       console.error(error);
     }
 
+    let diff = filteredFiles.diff
+
     try {
+      if(diffIndex || diffIndex === 0){
+        diff = extractDiffs(filteredFiles.diff)?.[diffIndex]
+      }
+
       const relatedFiles = await fetch('http://10.15.97.188:8000/api/chat_with_system', {
         method: 'POST',
         headers: {
@@ -54,7 +73,7 @@ export const getDiffsContent = new Tool({
         },
 
         body: JSON.stringify({
-          message: `在文件${filteredFiles.new_path}中变更内容为${filteredFiles.diff},请提供与该变更内容可能存在关联的代码路径`
+          message: `在文件${filteredFiles.new_path}中变更内容为${diff}，请提供与该变更内容最可能存在关联的代码路径，至多3个`
         }),
       });
 
@@ -63,6 +82,7 @@ export const getDiffsContent = new Tool({
       if (status === 'success') {
         relatedList = response
       }
+      // relatedList = ''
     } catch (error) {
       console.error(error);
     }
@@ -73,7 +93,7 @@ export const getDiffsContent = new Tool({
       changes: countAdditions(filteredFiles.diff) + countDeletions(filteredFiles.diff),
       additions: countAdditions(filteredFiles.diff),
       deletions: countDeletions(filteredFiles.diff),
-      patch: filteredFiles.diff,
+      patch: diff,
       relatedList: relatedList
     }
 
