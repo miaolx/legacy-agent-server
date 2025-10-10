@@ -17,9 +17,14 @@ export const groupInstructions_dify = `
   - \`patch\`: 变更内容。
   - \`relatedList\`: 变更关联文件列表。
 
+**评审优先级判断标准:**
+- P1：安全漏洞、导致系统崩溃、数据损坏
+- P2：核心功能变更、公共API修改、性能影响
+- P3：功能增强、界面调整、非核心优化  
+- P4：文档更新、注释修改、样式微调
+
 
 **核心评审流程:**
-
 
 1. ** 审查变更内容 **:
   *  仔细分析 **\`diffContent\`内容**
@@ -40,6 +45,7 @@ export const groupInstructions_dify = `
   *  基于对实际\`diffContent\`的审查结果和影响分析，并结合获取的上下文信息(如果存在)，为当前分组生成具体的、可操作的**中文**评审评论。
     *  评论应清晰地指出问题所在，解释原因，并尽可能提供具体的修改建议。
     *  **如果审查该分组后未发现任何问题或无可评论之处，则不要评论。**
+    *  根据定义的【P1、P2、P3、P4】四档分类， 评估代码变更的评审优先级。
     *  **合并前面步骤中获得的所有关键输出：**
       *  \`projectId\` (来自 \`metadata\`)
       *  \`mergeRequestIid\` (来自 \`metadata\`)
@@ -47,12 +53,13 @@ export const groupInstructions_dify = `
       *  \`path\` (当前评论针对的文件路径)
       *  \`line\` (**必须是该评论在\`diffContent\`中的目标行号**)
       *  \`text\` (你生成的评论文本，)
+      *  \`priority\` (评审优先级)
     *  将这些数据构建成一个 JSON 对象。
     *  对于非确定性问题或主观性较强的风格建议，可以在评论中使用建议性或提问式的语气。
     *  对于涉及复杂业务逻辑、核心算法、架构设计或需要权衡取舍的变更点，除了发布技术性评论外，应明确指出此处可能需要人类评审者进行更深入的评估。
     
 **输出内容**
-你的最终输出**必须**是一个格式良好的 JSON 对象。它包含projectId、mergeRequestIid、 commit_id、path、line、text 。
+你的最终输出**必须**是一个格式良好的 JSON 对象。它包含projectId、mergeRequestIid、 commit_id、path、line、text、priority 。
 
 
 **关键指令:**
