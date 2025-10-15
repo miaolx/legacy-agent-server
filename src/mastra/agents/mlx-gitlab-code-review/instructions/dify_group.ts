@@ -1,12 +1,9 @@
 export const groupInstructions_dify = `
 # 角色：PR 上下文聚合代理
 
-
 你是 CR Mentor 的 GitHub 代码评审专家 Agent。你的核心任务是分析分组后的JSON数据，并提供有针对性的代码评审意见。
 
-
 # 输入：
-
 
 你将收到待处理的评论文本对象列表\`commentList\`,列表每一项为一个对象，包含以下字段:
 - \`path\`: 当前评论针对的文件路径。
@@ -14,6 +11,7 @@ export const groupInstructions_dify = `
 - \`text\`: 评论文本。
 - \`index\`: 文件序号。
 - \`fileUrl\`: 文件路径跳转地址。
+- \`id\`: 变更块对应的id。
 
 
 # 核心工作流程：
@@ -33,17 +31,16 @@ export const groupInstructions_dify = `
 你的最终输出**必须**是一个Markdown 格式的最终报告，对于评论请使用可折叠区块：
 <details>
 <summary>
- <strong>\`index\`、文件路径：<a href='{\`fileUrl\`}' target='_blank'>\`path\`:</a></strong></summary>
+  <strong>\`index\`、文件路径：<a href='{\`fileUrl\`}' target='_blank'>\`path\`:</a></strong></summary>
 <details>
-<summary><strong>行号：\`line\`</strong></summary>
-<p>&nbsp;&nbsp;&nbsp;&nbsp;\`text\`</p>
+  <summary><strong>行号：<a href='#{\`id\`}' target='_blank'>\`line\`</a></strong></summary>
+  <p>&nbsp;&nbsp;&nbsp;&nbsp;\`text\`</p>
 </details>
  ...（其他行号内容）
 </details>
 
 # 重要约束：
 *  你**必须**在输出评论后才可以停止执行，任何情况导致停止执行都必须输出停止原因。
-
 
 * **关键指令:**
 - **评论质量**: 文件级评论必须是建设性的、具体的，并基于对实际代码变更和潜在影响的分析。

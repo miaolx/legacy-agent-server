@@ -35,10 +35,10 @@ export const getDiffsContent = new Tool({
     mergeRequestIid: z.number().describe("The name of the mergeRequest (e.g., 1)."),
     paths: z.string().describe("The path of the file to get the diff content."),
     diffIndex: z.number().describe("The index of the chunk in the diff content."),
+    isDefault: z.string().describe("Is it the default workFlow"),
   }),
   outputSchema,
   execute: async ({ context }) => {
-    console.log("getDiffsContent ~ context:", context)
     let _context: any = {}
     if (typeof context === 'string' || context instanceof String) {
       _context = JSON.parse(context?.trim().replace(/'/g, '"').replace(/(\w+):/g, '"$1":'))
@@ -46,7 +46,7 @@ export const getDiffsContent = new Tool({
       _context = context
     }
     console.log("🚀 ~  _context:", _context)
-    const { projectId, project_id, mergeRequestIid, merge_request_iid, paths, diffIndex } = _context;
+    const { projectId, project_id, mergeRequestIid, merge_request_iid, paths, diffIndex, isDefault } = _context;
 
     let relatedList = ''
     let filteredFiles: any = { diff: '' }
@@ -60,32 +60,36 @@ export const getDiffsContent = new Tool({
 
     let diff = filteredFiles.diff
 
-    try {
-      if(diffIndex || diffIndex === 0){
-        diff = extractDiffs(filteredFiles.diff)?.[diffIndex]
+    if (!isDefault) {
+      try {
+        if (diffIndex || diffIndex === 0) {
+          diff = extractDiffs(filteredFiles.diff)?.[diffIndex]
+        }
+
+        const relatedFiles = await fetch('http://10.15.97.188:8000/api/chat_with_system', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+
+          body: JSON.stringify({
+            message: `在文件${filteredFiles.new_path}中变更内容为${diff}，请提供与该变更内容最可能存在关联的完整代码路径，至多2个`
+          }),
+        });
+
+        const { response, status } = await relatedFiles.json();
+
+        if (status === 'success') {
+          relatedList = response
+        }
+        // relatedList = ''
+      } catch (error) {
+        console.error(error);
       }
-
-      const relatedFiles = await fetch('http://10.15.97.188:8000/api/chat_with_system', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-
-        body: JSON.stringify({
-          message: `在文件${filteredFiles.new_path}中变更内容为${diff}，请提供与该变更内容最可能存在关联的完整代码路径，至多2个`
-        }),
-      });
-
-      const { response, status } = await relatedFiles.json();
-
-      if (status === 'success') {
-        relatedList = response
-      }
-      // relatedList = ''
-    } catch (error) {
-      console.error(error);
     }
+
+    console.log('getDiffsContent执行完成');
 
     const files = {
       filename: filteredFiles.new_path,
