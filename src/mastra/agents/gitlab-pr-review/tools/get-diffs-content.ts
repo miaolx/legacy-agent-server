@@ -45,7 +45,7 @@ export const getDiffsContent = new Tool({
     } else {
       _context = context
     }
-    console.log("🚀 ~  _context:", _context)
+    console.log("🚀 ~ getDiffsContent _context:", _context)
     const { projectId, project_id, mergeRequestIid, merge_request_iid, paths, diffIndex, isDefault } = _context;
 
     let relatedList = ''
@@ -72,10 +72,14 @@ export const getDiffsContent = new Tool({
             'Content-Type': 'application/json',
             'Accept': 'application/json',
           },
-
           body: JSON.stringify({
             message: `在文件${filteredFiles.new_path}中变更内容为${diff}，请提供与该变更内容最可能存在关联的完整代码路径，至多2个`
           }),
+          // body: JSON.stringify({
+          //   message: `在文件${filteredFiles.new_path}中变更内容为${diff}，请提供与该变更内容最可能存在关联的代码块。`,
+          //   return_documents_only: true,
+          //   "relate-documents-count": 3
+          // }),
         });
 
         const { response, status } = await relatedFiles.json();
