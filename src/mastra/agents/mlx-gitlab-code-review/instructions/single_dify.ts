@@ -29,7 +29,12 @@ export const groupInstructions_dify = `
       * 用**中文**作为报告语言。
   
 # 输出：
-你的最终输出**必须**是一个格式良好的 JSON 对象。它包含priority和评论内容text。
+你的最终输出**必须**是一个格式良好的 JSON 对象。它包含priority和评论内容text、该评论的目标行号line。格式为：
+{
+  "line": 该评论的目标行号,
+  "priority": 评审优先级,
+  "text": 评审得到评论
+}
 
 
 * **严格限制:**
