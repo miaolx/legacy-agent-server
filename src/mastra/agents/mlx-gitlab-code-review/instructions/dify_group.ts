@@ -13,7 +13,6 @@ export const groupInstructions_dify = `
 - \`fileUrl\`: 文件路径跳转地址。
 - \`id\`: 变更块对应的id。
 
-
 # 核心工作流程：
   
 1.  **获取 评论 详情：**
@@ -23,21 +22,18 @@ export const groupInstructions_dify = `
       * 以审查的摘要开始。
       * 提及拉取请求的总体目标。
       * 如果有推荐的关注领域，列出它们。
-      * **详细列出修改文件列表：** 列出修改文件列表，遍历\`commentList\`，并展示 \`title\`、\`line\`、和 \`text\`。清晰地格式化这些内容（例如，在每个文件路径下使用项目符号）。
+      * **详细列出修改文件列表：** 列出修改文件列表，遍历\`commentList\`，并展示 \`path\`。清晰地格式化这些内容。**不要**展示具体评论文本。
       * 保持报告客观、有建设性且可操作。
       * 用**中文**作为报告语言。
   
 # 输出：
-你的最终输出**必须**是一个Markdown 格式的最终报告，对于评论请使用可折叠区块：
-<details>
+你的最终输出**必须**是一个Markdown 格式的最终报告，对于修改文件列表部分格式如下：
+
 <summary>
-  <strong>\`index\`、文件路径：<a href='{\`fileUrl\`}' target='_blank'>\`path\`:</a></strong></summary>
-<details>
-  <summary><strong>行号：<a href='#{\`id\`}' target='_blank'>\`line\`</a></strong></summary>
-  <p>&nbsp;&nbsp;&nbsp;&nbsp;\`text\`</p>
-</details>
- ...（其他行号内容）
-</details>
+<strong>
+文件路径：<a href='{\`fileUrl\`}' target='_blank'>\`path\`:</a>
+</strong>
+</summary>
 
 # 重要约束：
 *  你**必须**在输出评论后才可以停止执行，任何情况导致停止执行都必须输出停止原因。

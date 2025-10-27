@@ -40,6 +40,7 @@ export const getDiffsContent = new Tool({
   outputSchema,
   execute: async ({ context }) => {
     let _context: any = {}
+    console.log("🚀 ~ getDiffsContent context:", context)
     if (typeof context === 'string' || context instanceof String) {
       _context = JSON.parse(context?.trim().replace(/'/g, '"').replace(/(\w+):/g, '"$1":'))
     } else {
