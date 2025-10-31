@@ -27,6 +27,52 @@ const extractDiffs = (diffContent: string) => {
 }
 
 
+const parsePatch = (diffContent: string) => {
+  // 按行分割 patch
+  const lines = diffContent.split('\n');
+  const result = [];
+  let currentNewLine = 0;
+  let inHunk = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    
+    // 检查是否为 @@ 头
+    if (line.startsWith('@@')) {
+      // 解析 @@ 头获取新文件的起始行号
+      const match = line.match(/@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@/);
+      if (match) {
+        currentNewLine = parseInt(match[1], 10);
+        inHunk = true;
+        result.push(`${line}`);
+      }
+      continue;
+    }
+    
+    // 如果在 hunk 中，处理各种情况
+    if (inHunk) {
+      if (line.startsWith(' ')) {
+        // 空格行：当前新行号递增
+        result.push(`${currentNewLine}: ${line}`);
+        currentNewLine++;
+      } else if (line.startsWith('+')) {
+        // 加号行：当前新行号递增
+        result.push(`${currentNewLine}: ${line}`);
+        currentNewLine++;
+      } else if (line.startsWith('-')) {
+        // 减号行：当前新行号不变
+        result.push(`${currentNewLine}: ${line}`);
+        // 注意：currentNewLine 不递增
+      } else {
+        // 其他情况（如空行或非补丁行）
+        result.push(`${currentNewLine}: ${line}`);
+        currentNewLine++;
+      }
+    } 
+  }
+  return result.join('\n');
+}
+
 export const getDiffsContent = new Tool({
   id: "getDiffsContent",
   description: "Fetches the diff content of the changed files in the pull request.",
@@ -59,7 +105,7 @@ export const getDiffsContent = new Tool({
       console.error(error);
     }
 
-    let diff = filteredFiles.diff
+    let diff = parsePatch(filteredFiles.diff)
 
     if (!isDefault) {
       try {

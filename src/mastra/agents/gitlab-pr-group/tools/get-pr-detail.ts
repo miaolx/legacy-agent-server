@@ -112,7 +112,7 @@ export const getPrDetail = new Tool({
         additions: countAdditions(f.diff),
         deletions: countDeletions(f.diff),
         patch: f.diff
-      }));
+      })).filter((i) => i.status !== 'removed');
 
       // 4. commits messages
       const commits = commitsResponse.map(c => ({
