@@ -9,16 +9,10 @@ const standards = `
 - standards-07: 对可能异常的操作（如 JSON.parse、数组越界访问），优先使用try...catch语法。
 - standards-08: 使用 TypeScript 时，明确接口（interface）和类型（type），避免 any 类型滥用。
 - standards-09: 提取公共逻辑为通用函数 / 组件，避免重复代码，相同逻辑不超过 2 次复制。
-- standards-10: 避免过度简写和逻辑堆砌：三元表达式不嵌套超过 2 层，for 循环嵌套不超过 2 层，复杂判断抽为布尔变量（如 const isEligible = a > 0 && b < 10）。
-- standards-11: 条件判断避免多层 if-else 嵌套，优先用 switch-case 或对象映射，提升逻辑可读性。
-- standards-12: 入参必须做边界校验：对必填参数检查是否存在，对数组 / 对象检查是否为 null/undefined。
-- standards-13: 使用可选链操作符（?.）和空值合并操作符（??）来安全地访问深层属性和提供默认值。
-- standards-14: 使用逻辑运算符（||、??）或函数默认参数为变量设置安全默认值，避免因 undefined 或 null 导致的控制报错和运行时异常。
-- standards-15: 数据持久化或状态管理场景中，原始对象数据不可修改时，使用深拷贝创建新对象后操作，避免产生不可预见的副作用和状态污染。
-`
-
-const yjt_standards = `
-- yjt_standards-01: 尽量避免使用GlobalStyle作用于整个应用，里面定义的CSS会影响所有组件，造成样式覆盖。
+- standards-10: 避免过度简写和逻辑堆砌：三元表达式不嵌套超过 2 层，for 循环嵌套不超过 2 层，复杂判断抽为布尔变量（如 const isEligible = a > 0 && b < 10）。条件判断避免多层 if-else 嵌套，优先用 switch-case 或对象映射，提升逻辑可读性
+- standards-11: 使用可选链操作符（?.）和空值合并操作符（??）来安全地访问深层属性， 使用逻辑运算符（||、??）或函数默认参数为变量设置安全默认值，避免因 undefined 或 null 导致的控制报错和运行时异常。
+- standards-12: 数据持久化或状态管理场景中，原始对象数据不可修改时，使用深拷贝创建新对象后操作，避免产生不可预见的副作用和状态污染。
+- standards-13: 禁用全局性样式改动，不使用createGlobalstyle，以避免污染其他模块。
 `
 
 const score_Instructions = `
