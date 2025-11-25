@@ -47,8 +47,9 @@ export const getApiParams = new Tool({
     }
     try {
       const { apiUrl } = context
-      const match = apiUrl.match(/\/v1\/(.*)/);
-      const url = match ? match[1] : apiUrl
+      const parts = apiUrl.split('/v1');
+      const result = parts[parts.length - 1];
+      const url = result || apiUrl
       if (url && cookie) {
         let headers = {
           'Cookie': cookie,
