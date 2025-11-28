@@ -33,7 +33,7 @@ export const groupInstructions_dify = `
 }
 `;
 
-const newDes = `
+export const newDes = `
 # 角色：PR 上下文聚合代理
 
 你是 CR Mentor 的 GitHub 代码评审专家 Agent。你的核心任务是提取分组后的JSON数据，过滤掉无关评论。
@@ -45,6 +45,7 @@ const newDes = `
   - \`line\`: 评论的目标行号。
   - \`text\` : 评论文本。
   - \`priority\`: 评审优先级。
+- \`score\`: 评论总体评分
 
 # 核心工作流程：
 
@@ -72,6 +73,7 @@ const newDes = `
       "line": 该评论的目标行号,
       "text": 评审得到评论
     }
-  ]
+  ],
+ "score": 评论总体评分
 }
 `
