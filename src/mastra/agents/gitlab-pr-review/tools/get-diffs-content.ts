@@ -26,17 +26,18 @@ const extractDiffs = (diffContent: string) => {
   return diffs;
 }
 
-
 const parsePatch = (diffContent: string) => {
   // 按行分割 patch
   const lines = diffContent.split('\n');
   const result = [];
+  const added = [];
+  const removed = []
   let currentNewLine = 0;
   let inHunk = false;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    
+
     // 检查是否为 @@ 头
     if (line.startsWith('@@')) {
       // 解析 @@ 头获取新文件的起始行号
@@ -48,30 +49,37 @@ const parsePatch = (diffContent: string) => {
       }
       continue;
     }
-    
+
     // 如果在 hunk 中，处理各种情况
     if (inHunk) {
       if (line.startsWith(' ')) {
         // 空格行：当前新行号递增
         result.push(`${currentNewLine}: ${line}`);
+        added.push(`${currentNewLine}: ${line}`);
+        removed.push(`${currentNewLine}: ${line}`);
         currentNewLine++;
       } else if (line.startsWith('+')) {
         // 加号行：当前新行号递增
         result.push(`${currentNewLine}: ${line}`);
+        added.push(`${currentNewLine}: ${line}`);
         currentNewLine++;
       } else if (line.startsWith('-')) {
         // 减号行：当前新行号不变
         result.push(`${currentNewLine}: ${line}`);
+        removed.push(`${currentNewLine}: ${line}`);
         // 注意：currentNewLine 不递增
       } else {
         // 其他情况（如空行或非补丁行）
         result.push(`${currentNewLine}: ${line}`);
+        added.push(`${currentNewLine}: ${line}`);
+        removed.push(`${currentNewLine}: ${line}`);
         currentNewLine++;
       }
-    } 
+    }
   }
-  return result.join('\n');
+  return [result.join('\n'), added.join('\n'), removed.join('\n')];
 }
+
 
 export const getDiffsContent = new Tool({
   id: "getDiffsContent",
@@ -105,7 +113,7 @@ export const getDiffsContent = new Tool({
       console.error(error);
     }
 
-    let diff = parsePatch(filteredFiles.diff)
+    let [diff, added, removed] = parsePatch(filteredFiles.diff)
 
     if (!isDefault) {
       try {
@@ -120,14 +128,10 @@ export const getDiffsContent = new Tool({
             'Accept': 'application/json',
           },
           body: JSON.stringify({
-            message: `在文件${filteredFiles.new_path}中变更内容为${diff}，请提供与该变更内容最可能存在关联的完整代码路径，至多2个`,
+            message: `在文件${filteredFiles.new_path}中变更内容为${diff}，请提供与该变更内容最可能存在关联的代码块，至多3个。返回数据中只要结果，不要带有查询内容。`,
+            return_documents_only: true,
             "relate-documents-count": 3
           }),
-          // body: JSON.stringify({
-          //   message: `在文件${filteredFiles.new_path}中变更内容为${diff}，请提供与该变更内容最可能存在关联的代码块。`,
-          //   return_documents_only: true,
-          //   "relate-documents-count": 3
-          // }),
         });
 
         const { response, status } = await relatedFiles.json();
@@ -145,11 +149,9 @@ export const getDiffsContent = new Tool({
 
     const files = {
       filename: filteredFiles.new_path,
-      status: getChangeType(filteredFiles) as 'added' | 'modified' | 'removed' | 'renamed',
-      changes: countAdditions(filteredFiles.diff) + countDeletions(filteredFiles.diff),
-      additions: countAdditions(filteredFiles.diff),
-      deletions: countDeletions(filteredFiles.diff),
       patch: diff,
+      added,
+      removed,
       relatedList: relatedList
     }
 
