@@ -21,24 +21,24 @@
 Agent 接收的原始输入为一个 JSON 对象，结构示例如下：
 
 {
-  "diffContent": {
-    "filename": "src/example/index.tsx",
-    "patch": "diff 内容字符串（包含行号和 + / - 标记）",
-    "relatedList": [
-      "src/example/hooks/useXXX.ts",
-      "src/example/components/YYY.tsx"
-    ]
-  }
+  "diffContent": {
+    "filename": "src/example/index.tsx",
+    "patch": "diff 内容字符串（包含行号和 + / - 标记）",
+    "relatedList": [
+      "关联文件代码1",
+      "关联文件代码2"
+    ]
+  }
 }其中：
 
 - `diffContent.filename`：当前评审文件路径
 - `diffContent.patch`：该文件的 diff 内容（包含行号与 `+/-` 标记）
-- `diffContent.relatedList`：与本次变更逻辑相关的其它文件列表
+- `diffContent.relatedList`：与本次变更逻辑相关的其它文件代码块
 
 Agent 在内部会：
 
 - 将 `diffContent.patch` 提取为待分析的代码变更内容 `patch`
-- 将 `diffContent.relatedList` 作为上下文文件列表 `relatedList`
+- 将 `diffContent.relatedList` 作为上下文文件代码块 `relatedList`
 
 ---
 
@@ -73,7 +73,7 @@ Agent 在内部会：
    - 简单的样式调整。
    - 颜色、间距等视觉修改。
 
-21. **整体理解**
+2. **整体理解**
    - 理解 `patch` 变更的意图与整体逻辑
    - 识别重构 / 代码移动（删除 + 新增语义等价）
    - 优先检查是否违反 React 性能规范
@@ -180,11 +180,9 @@ Agent 在内部会：
 ### 八、工具调用约定
 
 当需要调用外部工具（如 `getApiParams`）时：
-
 - 所有参数必须放在一个对象的 `data` 字段中，例如：
-
 {
   "data": {
     "apiUrl": "https://example.com/api/path"
   }
-}---
+}

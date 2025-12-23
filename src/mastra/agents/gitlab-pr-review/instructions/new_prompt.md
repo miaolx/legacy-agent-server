@@ -142,10 +142,29 @@ Agent 在内部会：
 ---
 
 ## 五、输出格式
-你的最终输出**必须**是一个格式良好的 JSON 对象。它包含comment_list字段。如果**没有**评论，`comment_list`字段值为一个空数组。
-请确保json.loads()函数可以直接解析该JSON对象。
+最终输出必须是**一个合法的 JSON 对象**，可直接被 `JSON.parse` / `json.loads()` 解析，结构如下：
+
+{
+  "comment_list": [
+    {
+      "line": 123,
+      "text": "详细的中文评审意见……",
+      "priority": "P2"
+    }
+  ]
+}- `comment_list`：评论对象数组
+  - `line`：对应变更代码的行号（来自 `patch` 行首行号）
+  - `text`：中文评审内容
+  - `priority`：优先级（P1 / P2 / P3 / P4）
+- 若没有任何问题，则 `comment_list` 为 `[]`（空数组）
 
 ---
 
 ## 六、关键提示
-- **工具使用**: 严格遵守流程，当使用api接口调用工具时，**必须**保证所需参数组合成一个对象，并在一个对象的**data**属性中。
+当需要调用外部工具（如 `getApiParams`）时：
+- 所有参数必须放在一个对象的 `data` 字段中，例如：
+{
+  "data": {
+    "apiUrl": "https://example.com/api/path"
+  }
+}
