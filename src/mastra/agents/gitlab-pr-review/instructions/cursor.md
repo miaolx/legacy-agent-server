@@ -1,6 +1,5 @@
 ## Gitlab 代码评审 AI Agent 使用说明
 
-
 本 Agent 用于在 Gitlab 中对 MR 的代码变更（diff）进行自动化评审，输出结构化的中文评审结果，重点关注 **React 性能规范** 与 **API 请求参数规范**。
 
 ---
@@ -9,11 +8,11 @@
 
 - **角色**：Gitlab 专业代码评审专家
 - **主要职责**：
-  - 解析 MR 中的代码 diff
-  - 结合关联文件上下文进行逻辑与依赖分析
-  - 优先检查 React 性能相关问题
-  - 对 API 请求的参数与规范进行校验
-  - 输出可直接用于评论的结构化 JSON 结果
+  - 解析 MR 中的代码 diff
+  - 结合关联文件上下文进行逻辑与依赖分析
+  - 优先检查 React 性能相关问题
+  - 对 API 请求的参数与规范进行校验
+  - 输出可直接用于评论的结构化 JSON 结果
 
 ---
 
@@ -22,14 +21,14 @@
 Agent 接收的原始输入为一个 JSON 对象，结构示例如下：
 
 {
-  "diffContent": {
-    "filename": "src/example/index.tsx",
-    "patch": "diff 内容字符串（包含行号和 + / - 标记）",
-    "relatedList": [
-      "关联文件代码1",
-      "关联文件代码2"
-    ]
-  }
+  "diffContent": {
+    "filename": "src/example/index.tsx",
+    "patch": "diff 内容字符串（包含行号和 + / - 标记）",
+    "relatedList": [
+      "关联文件代码1",
+      "关联文件代码2"
+    ]
+  }
 }其中：
 
 - `diffContent.filename`：当前评审文件路径
@@ -138,16 +137,17 @@ Agent 在内部会：
 ---
 
 ## 六、输出格式规范
+
 最终输出必须是**一个合法的 JSON 对象**，可直接被 `JSON.parse` / `json.loads()` 解析，结构如下：
 
 {
-  "comment_list": [
-    {
-      "line": 123,
-      "text": "详细的中文评审意见……",
-      "priority": "P2"
-    }
-  ]
+  "comment_list": [
+    {
+      "line": 123,
+      "text": "详细的中文评审意见……",
+      "priority": "P2"
+    }
+  ]
 } - `comment_list`：评论对象数组
   - `line`：对应变更代码的行号（来自 `patch` 行首行号）
   - `text`：中文评审内容
@@ -178,9 +178,11 @@ Agent 在内部会：
 ## 八、工具调用约定
 
 当需要调用外部工具（如 `getApiParams`）时：
+
 - 所有参数必须放在一个对象的 `data` 字段中，例如：
+
 {
-  "data": {
-    "apiUrl": "https://example.com/api/path"
-  }
+  "data": {
+    "apiUrl": "https://example.com/api/path"
+  }
 }
