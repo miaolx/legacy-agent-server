@@ -105,12 +105,26 @@ export const getDiffsContent = new Tool({
 
     let relatedList = ''
     let filteredFiles: any = { diff: '' }
+    let filesResponse: any = null
 
     try {
-      const filesResponse = await GitlabAPI.MergeRequests.showChanges(projectId || project_id, mergeRequestIid || merge_request_iid);
-      filteredFiles = filesResponse?.changes.filter(f => paths.includes(f.new_path))?.[0];
+      filesResponse = await GitlabAPI.MergeRequests.showChanges(projectId || project_id, mergeRequestIid || merge_request_iid);
+      filteredFiles = filesResponse?.changes.filter((f: any) => paths.includes(f.new_path))?.[0];
     } catch (error) {
       console.error(error);
+    }
+
+    try {
+      const matches = [...filteredFiles.diff.matchAll(/from\s+['"](.+?)['"]/g)];
+      const relateList = matches.map(match => match[1])
+      const filterRelateFilesList = filesResponse?.changes.filter((f: any) => {
+        let new_path = f.new_path
+        return relateList.some(v => new_path.includes(v))
+      })
+      const filterRelateFiles = filterRelateFilesList.map((i: any) => i.diff).join('//n')
+      relatedList = filterRelateFiles
+    } catch (err) {
+      console.error(err);
     }
 
     let [diff, added, removed] = parsePatch(filteredFiles.diff)
@@ -137,9 +151,8 @@ export const getDiffsContent = new Tool({
         const { response, status } = await relatedFiles.json();
 
         if (status === 'success') {
-          relatedList = response
+          relatedList = relatedList + response
         }
-        // relatedList = ''
       } catch (error) {
         console.error(error);
       }
@@ -150,8 +163,8 @@ export const getDiffsContent = new Tool({
     const files = {
       filename: filteredFiles.new_path,
       patch: diff,
-//      added,
-//      removed,
+      //      added,
+      //      removed,
       relatedList: relatedList
     }
 
