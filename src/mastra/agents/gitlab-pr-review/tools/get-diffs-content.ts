@@ -150,8 +150,8 @@ export const getDiffsContent = new Tool({
     const files = {
       filename: filteredFiles.new_path,
       patch: diff,
-      added,
-      removed,
+//      added,
+//      removed,
       relatedList: relatedList
     }
 
