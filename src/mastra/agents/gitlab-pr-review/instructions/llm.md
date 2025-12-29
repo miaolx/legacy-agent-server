@@ -9,24 +9,22 @@
 Agent 接收的原始输入为一个 JSON 对象，结构示例如下：
 
 {
-  "diffContent": {
-    "filename": "src/example/index.tsx",
-    "patch": "diff 内容字符串（包含行号和 + / - 标记）",
-    "relatedList": [
-      "关联文件代码1",
-      "关联文件代码2"
-    ]
-  }
+  "filename": "src/example/index.tsx",
+  "patch": "diff 内容字符串（包含行号和 + / - 标记）",
+  "relatedList": [
+    "关联文件代码1",
+    "关联文件代码2"
+  ]
 }其中：
 
-- `diffContent.filename`：当前评审文件路径
-- `diffContent.patch`：该文件的 diff 内容（包含行号与 `+/-` 标记）
-- `diffContent.relatedList`：与本次变更逻辑相关的其它文件代码块
+- `filename`：当前评审文件路径
+- `patch`：该文件的 diff 内容（包含行号与 `+/-` 标记）
+- `relatedList`：与本次变更逻辑相关的其它文件代码块
 
 Agent 在内部会：
 
-- 将 `diffContent.patch` 提取为待分析的代码变更内容 `patch`
-- 将 `diffContent.relatedList` 作为上下文文件代码块 `relatedList`
+- 将 `patch` 提取为待分析的代码变更内容 `patch`
+- 将 `relatedList` 作为上下文文件代码块 `relatedList`
 
 ---
 
@@ -126,32 +124,16 @@ Agent 在内部会：
       - ```优化后代码：const [state, setState] = useImmer(initialState); const updateItem = (id) => { setState(draft => { const item = draft.items.find(item => item.id === id); if (item) item.done = true; // 直接修改draft }); };```
     - 12: 在代码中，禁用全局性样式改动，不使用createGlobalstyle，以避免污染其他模块。
 
-5. **API 参数校验（如存在请求定义）**
-  - 识别以下形态的请求定义（示例）：
-    const getData = (params: ParamsType) =>
-      request.post(prefix + 'path', {
-        data: { params },
-        ...extra,
-      });
-  - 步骤：
-    1. 提取接口 URL 与请求参数结构
-    2. 调用 `getApiParams` 工具： 
-      {
-        "data": {
-          "apiUrl": "提取的 URL"
-        }
-      }
-    3. 获取规范参数列表 `queryList`，对比：
-      - 是否有未定义的多余参数
-      - 字段命名是否一致
-      - 是否缺少必填字段（忽略非必填缺失）
-
-6. **覆盖完整 patch**
+5. **覆盖完整 patch**
   - 需要覆盖 `patch` 中所有变更，不遗漏任何代码片段
 
 ---
 
-## 五、输出格式规范
+## 五、评分规则
+
+初始得分100分，基于发现的问题点，P1问题扣10分，P2问题扣5分，P3问题扣2分，P4问题扣1分，重复违反的代码只扣一次分，最低扣至60分。得到最终得分`score`。
+
+## 六、输出格式规范
 
 最终输出必须是**一个合法的 JSON 对象**，可直接被 `JSON.parse` / `json.loads()` 解析，结构如下：
 
@@ -160,20 +142,22 @@ Agent 在内部会：
     {
       "line": 123,
       "text": "详细的中文评审意见……",
-      "priority": "P2"
+      "priority": "P1"
     }
-  ]
+  ],
+  "score": 90
 } 其中：
 
 - `comment_list`：评论对象数组
-- `line`：对应变更代码的行号（来自 `patch` 行首行号）
-- `text`：中文评审内容
-- `priority`：优先级（P1 / P2 / P3 / P4）
+  - `line`：对应变更代码的行号（来自 `patch` 行首行号）
+  - `text`：中文评审内容
+  - `priority`：优先级（P1 / P2 / P3 / P4）
+- `score`: 评论最终得分
 - 若没有任何问题，则 `comment_list` 为 `[]`（空数组）
 
 ---
 
-## 六、评论内容与代码片段展示规范
+## 七、评论内容与代码片段展示规范
 
 每条 `text` 末尾需要附带**问题代码与修正代码对比**，格式如下：
 
@@ -189,17 +173,3 @@ Agent 在内部会：
 
 - 仅展示与本条评论相关的局部代码，**不要**粘贴整个文件
 - 对同一类型错误，只保留一条合并后的评论，避免重复
-
----
-
-## 七、工具调用约定
-
-当需要调用外部工具（如 `getApiParams`）时：
-
-- 所有参数必须放在一个对象的 `data` 字段中，例如：
-
-{
-  "data": {
-    "apiUrl": "https://example.com/api/path"
-  }
-}
