@@ -71,57 +71,174 @@ Agent 在内部会：
 
 4. **重点 React 性能规范检查（最高优先级）**  
   - 以下React 性能规范具有最高优先级，需要额外特别检查。
-    - 01：检查代码中组件props中是否存在直接传递对象字面量的情况，此类用法会导致子组件不必要的重渲染。应使用useMemo、memo对对象进行缓存后传递，以避免因父组件更新而引发的无效更新。例如：
-      - 以下代码中，pagination属性直接传递了一个对象字面量，这会导致每次渲染时都生成一个新的对象，从而引发不必要的重新渲染：
-      - <Component props={ ... 传入参数 } />这种代码违反了规范，直接传递了对象字面量。
-      - 修正建议：将对象定义为常量或使用useMemo钩子来记忆化该配置对象，以确保引用稳定。
-      - 优化后代码：const PROPS_CONFIG = { ... 传入参数 }; <Component props={PROPS_CONFIG } />
-    - 02：在代码中，所有定义在组件外层、作为props传递给子组件的存在依赖项的函数，必须使用useCallback或项目指定的useMemoizedFn进行包裹，以防止因函数引用变化而触发下游组件的无效更新。例如：
-      - 以下代码中，confirm函数每次渲染都会重新创建，传递给子组件的 props 引用不稳定，导致子组件不必要的重渲染：
-      - const confirm = () => { ... 确认逻辑 }; <span  onClick={confirm}>确定</span>
-      - 修正建议：将confirm函数用useCallback或项目指定的useMemoizedFn进行包裹，以确保引用稳定。
-      - 优化后代码：const confirm = useMemoizedFn(() => { ... 确认逻辑 }); <span  onClick={confirm}>确定</span>
-    - 03：在代码中，在渲染期间更新频率较低的数据，若无需触发组件重新渲染，建议优先使用 ref 替代 state，以避免不必要的渲染开销。例如：
-      - 以下代码中，cardHeight使用 state 存储，每次更新会触发组件重渲染，实际上 cardHeight 只是用于计算样式，不需要触发渲染。
-      - const [cardHeight, setCardHeight] = useState(0);
-      - 修正建议：使用 ref 替代 state。
-      - 优化后代码：const cardHeightRef = useRef(0);
-    - 04：在代码中，应谨慎使用 useContext。由于其值变化会触发所有消费组件的重新渲染，过度使用可能导致渲染性能下降。建议评估是否真正需要全局状态共享，或考虑使用更细粒度的状态管理方案。
-      - 以下代码中，将过多全局状态放入单个Context中，导致任意状态变化都会触发所有消费组件的重新渲染，造成性能浪费。
-      - const GlobalContext = createContext({ ...包括User、Theme等多种状态})
-      - 修正建议：根据业务逻辑拆分Context，或使用更细粒度的状态管理方案，减少不必要的重新渲染。
-      - 优化后代码：const UserContext = createContext({ ...User状态}); const ThemeContext = createContext({ ...Theme状态}); 
+    - 01：检查代码中组件props中是否存在直接传递对象字面量的情况，此类用法会导致子组件不必要的重渲染。应使用useMemo、memo对对象进行缓存后传递，以避免因父组件更新而引发的无效更新。例如，以下代码中，pagination属性直接传递了一个对象字面量，这会导致每次渲染时都生成一个新的对象，从而引发不必要的重新渲染：
+      - 有问题代码:  
+        ```javascript 
+        <Component props={ {...传入参数} } /> 
+        ```
+      - 修改建议：将对象定义为常量或使用useMemo钩子来记忆化该配置对象，以确保引用稳定。
+      - 修改后代码：
+        ```javascript 
+        const PROPS_CONFIG = { ... 传入参数 }; <Component props={PROPS_CONFIG } />
+        ```
+    - 02：在代码中，所有定义在组件外层、作为props传递给子组件的存在依赖项的函数，必须使用useCallback或项目指定的useMemoizedFn进行包裹，以防止因函数引用变化而触发下游组件的无效更新。例如，以下代码中，confirm函数每次渲染都会重新创建，传递给子组件的 props 引用不稳定，导致子组件不必要的重渲染：
+      - 有问题代码: 
+        ```javascript 
+        const confirm = () => { ... 确认逻辑 }; <span  onClick={confirm}>确定</span>
+        ```
+      - 修改建议：将confirm函数用useCallback或项目指定的useMemoizedFn进行包裹，以确保引用稳定。
+      - 修改后代码：
+        ```javascript 
+        const confirm = useMemoizedFn(() => { ... 确认逻辑 }); 
+        <span  onClick={confirm}>确定</span>
+        ```
+    - 03：在代码中，在渲染期间更新频率较低的数据，若无需触发组件重新渲染，建议优先使用 ref 替代 state，以避免不必要的渲染开销。例如。以下代码中，cardHeight使用 state 存储，每次更新会触发组件重渲染，实际上 cardHeight 只是用于计算样式，不需要触发渲染：
+      - 有问题代码: 
+        ```javascript 
+        const [cardHeight, setCardHeight] = useState(0);
+        ```
+      - 修改建议：使用 ref 替代 state。
+      - 修改后代码：
+        ```javascript 
+        const cardHeightRef = useRef(0);
+        ```
+    - 04：在代码中，应谨慎使用 useContext。由于其值变化会触发所有消费组件的重新渲染，过度使用可能导致渲染性能下降。建议评估是否真正需要全局状态共享，或考虑使用更细粒度的状态管理方案。例如，以下代码中，将过多全局状态放入单个Context中，导致任意状态变化都会触发所有消费组件的重新渲染，造成性能浪费：
+      - 有问题代码: 
+        ```javascript
+        const GlobalContext = createContext({ ...包括User、Theme等多种状态})
+        ```
+      - 修改建议：根据业务逻辑拆分Context，或使用更细粒度的状态管理方案，减少不必要的重新渲染。
+      - 修改后代码：
+        ```javascript
+        const UserContext = createContext({ ...User状态}); 
+        const ThemeContext = createContext({ ...Theme状态});
+        ```
     - 05：在代码中，应避免使用全局事件分发机制（例如直接在 window 对象上派发自定义事件）。这种做法会导致事件流难以追踪、可能产生意外的副作用或监听器冲突，并降低代码的可维护性。建议将事件通信限制在明确的组件或模块作用域内，或优先考虑使用状态管理、上下文或 Props 等更可控的数据流方式。
-    - 06：在代码中，应避免直接、同步地读取 clientHeight、scrollWidth 等布局属性。此类操作会强制浏览器触发同步的重排（Reflow），从而阻塞渲染、造成显著的性能损耗。建议将相关读取操作后置（例如在 useEffect 中），或使用 ResizeObserver API 进行异步监听以优化性能。例如：
-      - 以下代码中，在组件渲染阶段同步读取布局属性，触发强制重排，从而阻塞渲染、造成显著的性能损耗。
-      - const emptyTop = document.querySelector('#id')?.getBoundingClientRect().top || 0;
-      - 修正建议：使用 useEffect 包裹，在浏览器空闲时读取布局属性。
-      - 优化后代码：useEffect(() => { ...读取布局属性相关逻辑 }, [])
-    - 07: 在代码中，应避免在循环体内部定义函数。这会导致每次循环迭代都创建一个新的函数实例，造成不必要的性能损耗和子组件的不稳定渲染。正确的做法是将函数提前提取到循环外部进行定义，以确保函数引用的稳定性。例如：
-      - 以下代码中，在循环体内部定义函数，导致每次迭代都创建新的函数实例，造成性能损耗和不稳定渲染。
-      - ```const list = items.map(item => { const onClick = () => console.log(item); return <div onClick={onClick}>{item}</div>; })```
-      - 修正建议：将函数定义提取到循环外部，以确保函数引用的稳定性。
-      - 优化后代码：```const handleClick = useMemoizedFn((item) => console.log(item)); const list = items.map(item => <div onClick={handleClick}>{item}</div>)```
-    - 08：在代码中，对于方法内部存在的过多、嵌套或重复的判断逻辑，应进行合并与封装，可以将其抽离为独立的纯函数或自定义Hook，以提升代码的清晰度、可测试性和可维护性。例如：
-      - 以下代码中，方法内部存在过多嵌套的判断逻辑，导致代码可读性差、难以维护和测试。
-      - ```const processData = (data, type) => { if (type === 'A') { if (data.status === 1) { return '处理A类型状态1'; } else if (data.status === 2) { return '处理A类型状态2'; } } else if (type === 'B') { if (data.status === 1) { return '处理B类型状态1'; } } return '默认处理'; }```
-      - 修正建议：将复杂的判断逻辑抽离为独立的纯函数，使主函数职责更清晰。
-      - 优化后代码：```const getTypeHandler = (type) => { const handlers = { A: (data) => data.status === 1 ? '处理A类型状态1' : '处理A类型状态2', B: (data) => data.status === 1 ? '处理B类型状态1' : '默认处理' }; return handlers[type] || (() => '默认处理'); }; const processData = (data, type) => { const handler = getTypeHandler(type); return handler(data); }```
-    - 09: 在代码中，应遵循函数单一职责原则。若一个函数内部混杂了过多逻辑（如同时处理数据转换、状态更新和副作用），会导致代码臃肿、可读性差且难以维护与测试。请将此类函数中的复杂逻辑（尤其是独立且可复用的部分）抽离为独立的纯函数或自定义Hook，确保主函数职责清晰、结构简洁。例如：
-      - 以下代码中，函数同时处理数据转换、状态更新和副作用，违反了单一职责原则。
-      - ```const handleSubmit = async () => { const rawData = await fetchData(); const processed = rawData.map(item => ({ ...item, fullName: `${item.firstName} ${item.lastName}` })); setList(processed); localStorage.setItem('cache', JSON.stringify(processed)); showNotification('处理完成'); }```
-      - 修正建议：将数据转换、状态更新和副作用等不同职责拆分为独立的函数或Hook。
-      - 优化后代码：```const useDataProcessor = () => { const processUserData = (data) => data.map(item => ({ ...item, fullName: `${item.firstName} ${item.lastName}` })); const cacheData = (data) => localStorage.setItem('cache', JSON.stringify(data)); return { processUserData, cacheData }; }; const handleSubmit = async () => { const rawData = await fetchData(); const { processUserData, cacheData } = useDataProcessor(); const processed = processUserData(rawData); setList(processed); cacheData(processed); showNotification('处理完成'); }```
-    - 10：在代码中，useMemo的回调函数应是一个纯函数，仅用于计算并返回值。任何在该函数内部直接修改组件状态（state）或引用（ref）值的行为，都被视为违反其设计原则的副作用，必须被指出并纠正。例如：
-      - 以下代码中，在useMemo回调函数中直接修改了ref的current属性，产生了副作用。
-      - ```const calculatedValue = useMemo(() => { const result = expensiveCalculation(data); someRef.current = result; // 错误的副作用 return result; }, [data])```
-      - 修正建议：将副作用操作移至useEffect中，保持useMemo回调函数的纯粹性。
-      - 优化后代码：```const calculatedValue = useMemo(() => expensiveCalculation(data), [data]); useEffect(() => { someRef.current = calculatedValue; }, [calculatedValue])```
-    - 11: 在代码中，通过useImmer或useContext创建的状态或上下文对象，允许在获取后直接进行修改，相关不可变更新逻辑已在底层封装处理，评审时无需就此提出异议。
-      - 以下代码中，在修改通过useImmer获取的状态时，仍采用浅拷贝等冗余的不可变更新写法。
-      - ```const [state, setState] = useImmer(initialState); const updateItem = (id) => { setState(draft => { const newDraft = { ...draft }; // 不必要的拷贝 newDraft.items = newDraft.items.map(item => item.id === id ? { ...item, done: true } : item); return newDraft; }); };```
-      - 修正建议：识别到状态源为useImmer，可直接修改draft对象，无需额外拷贝。
-      - ```优化后代码：const [state, setState] = useImmer(initialState); const updateItem = (id) => { setState(draft => { const item = draft.items.find(item => item.id === id); if (item) item.done = true; // 直接修改draft }); };```
+    - 06：在代码中，应避免直接、同步地读取 clientHeight、scrollWidth 等布局属性。此类操作会强制浏览器触发同步的重排（Reflow），从而阻塞渲染、造成显著的性能损耗。建议将相关读取操作后置（例如在 useEffect 中），或使用 ResizeObserver API 进行异步监听以优化性能。例如，以下代码中，在组件渲染阶段同步读取布局属性，触发强制重排，从而阻塞渲染、造成显著的性能损耗：
+      - 有问题代码: 
+        ```javascript
+        const emptyTop = document.querySelector('#id')?.getBoundingClientRect().top || 0;
+        ```
+      - 修改建议：使用 useEffect 包裹，在浏览器空闲时读取布局属性。
+      - 修改后代码：
+        ```javascript
+        useEffect(() => { ...读取布局属性相关逻辑 }, [])
+        ```
+    - 07: 在代码中，应避免在循环体内部定义函数。这会导致每次循环迭代都创建一个新的函数实例，造成不必要的性能损耗和子组件的不稳定渲染。正确的做法是将函数提前提取到循环外部进行定义，以确保函数引用的稳定性。例如，以下代码中，在循环体内部定义函数，导致每次迭代都创建新的函数实例，造成性能损耗和不稳定渲染：
+      - 有问题代码: 
+        ```javascript
+        const list = items.map(item => { 
+          const onClick = () => console.log(item); 
+          return <div onClick={onClick}>{item}</div>; 
+        })
+        ```
+      - 修改建议：将函数定义提取到循环外部，以确保函数引用的稳定性。
+      - 修改后代码：
+        ```javascript
+        const handleClick = useMemoizedFn((item) => console.log(item)); 
+        const list = items.map(item => <div onClick={handleClick}>{item}</div>)
+        ```
+    - 08：在代码中，对于方法内部存在的过多、嵌套或重复的判断逻辑，应进行合并与封装，可以将其抽离为独立的纯函数或自定义Hook，以提升代码的清晰度、可测试性和可维护性。例如，以下代码中，方法内部存在过多嵌套的判断逻辑，导致代码可读性差、难以维护和测试：
+      - 有问题代码: 
+        ```javascript
+        const processData = (data, type) => { 
+          if (type === 'A') { 
+            if (data.status === 1) { 
+              return '处理A类型状态1'; 
+            } else if (data.status === 2) { 
+              return '处理A类型状态2'; 
+            } 
+          } else if (type === 'B') { 
+            if (data.status === 1) { 
+              return '处理B类型状态1'; 
+            } 
+          } 
+          return '默认处理'; 
+        }
+        ```
+      - 修改建议：将复杂的判断逻辑抽离为独立的纯函数，使主函数职责更清晰。
+      - 修改后代码：
+        ```javascript
+        const getTypeHandler = (type) => { 
+          const handlers = { 
+            A: (data) => data.status === 1 ? '处理A类型状态1' : '处理A类型状态2', 
+            B: (data) => data.status === 1 ? '处理B类型状态1' : '默认处理' 
+          }; 
+          return handlers[type] || (() => '默认处理'); 
+        }; 
+        const processData = (data, type) => { 
+          const handler = getTypeHandler(type); 
+          return handler(data); 
+        }
+        ```
+    - 09: 在代码中，应遵循函数单一职责原则。若一个函数内部混杂了过多逻辑（如同时处理数据转换、状态更新和副作用），会导致代码臃肿、可读性差且难以维护与测试。请将此类函数中的复杂逻辑（尤其是独立且可复用的部分）抽离为独立的纯函数或自定义Hook，确保主函数职责清晰、结构简洁。例如，以下代码中，函数同时处理数据转换、状态更新和副作用，违反了单一职责原则：
+      - 有问题代码: 
+        ```javascript
+        const handleSubmit = async () => { 
+          const rawData = await fetchData(); 
+          const processed = rawData.map(item => ({ ...item, fullName: `${item.firstName} ${item.lastName}` })); 
+          setList(processed); 
+          localStorage.setItem('cache', JSON.stringify(processed)); 
+          showNotification('处理完成'); 
+        }
+        ```
+      - 修改建议：将数据转换、状态更新和副作用等不同职责拆分为独立的函数或Hook。
+      - 修改后代码：
+        ```javascript
+        const useDataProcessor = () => { 
+          const processUserData = (data) => data.map(item => ({ ...item, fullName: `${item.firstName} ${item.lastName}` })); 
+          const cacheData = (data) => localStorage.setItem('cache', JSON.stringify(data)); 
+          return { processUserData, cacheData }; 
+        }; 
+        const handleSubmit = async () => { 
+          const rawData = await fetchData(); 
+          const { processUserData, cacheData } = useDataProcessor(); 
+          const processed = processUserData(rawData); 
+          setList(processed); 
+          cacheData(processed); 
+          showNotification('处理完成'); 
+        }
+        ```
+    - 10：在代码中，useMemo的回调函数应是一个纯函数，仅用于计算并返回值。任何在该函数内部直接修改组件状态（state）或引用（ref）值的行为，都被视为违反其设计原则的副作用，必须被指出并纠正。例如，以下代码中，在useMemo回调函数中直接修改了ref的current属性，产生了副作用：
+      - 有问题代码: 
+        ```javascript
+        const calculatedValue = useMemo(() => { 
+          const result = expensiveCalculation(data); 
+          someRef.current = result; // 错误的副作用 
+          return result; 
+        }, [data])
+        ```
+      - 修改建议：将副作用操作移至useEffect中，保持useMemo回调函数的纯粹性。
+      - 修改后代码：
+        ```javascript
+        const calculatedValue = useMemo(() => expensiveCalculation(data), [data]); 
+        useEffect(() => { 
+          someRef.current = calculatedValue; 
+        }, [calculatedValue])
+        ```
+    - 11: 在代码中，通过useImmer或useContext创建的状态或上下文对象，允许在获取后直接进行修改，相关不可变更新逻辑已在底层封装处理，评审时无需就此提出异议。例如，以下代码中，在修改通过useImmer获取的状态时，仍采用浅拷贝等冗余的不可变更新写法：
+      - 有问题代码: 
+        ```javascript
+        const [state, setState] = useImmer(initialState); 
+        const updateItem = (id) => { 
+          setState(draft => { 
+            const newDraft = { ...draft }; // 不必要的拷贝 
+            newDraft.items = newDraft.items.map(item => item.id === id ? { ...item, done: true } : item); 
+            return newDraft; 
+          }); 
+        };
+        ```
+      - 修改建议：识别到状态源为useImmer，可直接修改draft对象，无需额外拷贝。
+      - 修改后代码：
+        ```javascript
+        const [state, setState] = useImmer(initialState); 
+        const updateItem = (id) => { 
+          setState(draft => { 
+            const item = draft.items.find(item => item.id === id); 
+            if (item) item.done = true; // 直接修改draft 
+          }); 
+        };
+        ```
     - 12: 在代码中，禁用全局性样式改动，不使用createGlobalstyle，以避免污染其他模块。
 
 5. **覆盖完整 patch**
