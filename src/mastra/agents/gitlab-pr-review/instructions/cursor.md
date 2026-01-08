@@ -73,15 +73,21 @@ Agent 在内部会：
 
 4. **重点 React 性能规范检查（最高优先级）**  
   - 以下React 性能规范具有最高优先级，需要额外特别检查。
-    - 01：检查代码中组件props中是否存在直接传递对象字面量的情况，此类用法会导致子组件不必要的重渲染。应使用useMemo、memo对对象进行缓存后传递，以避免因父组件更新而引发的无效更新。例如，以下代码中，pagination属性直接传递了一个对象字面量，这会导致每次渲染时都生成一个新的对象，从而引发不必要的重新渲染：
+    - 01：检查代码中组件props中是否存在直接传递对象字面量的情况，此类用法会导致子组件不必要的重渲染。应使用useMemo、memo对对象进行缓存后传递，以避免因父组件更新而引发的无效更新。例如，以下代码中，config属性直接传递了一个对象字面量，这会导致每次渲染时都生成一个新的对象，从而引发不必要的重新渲染：
       - 有问题代码:  
         ```javascript 
-        <Component props={ {...传入参数} } /> 
+        <Component config={ {...传入参数} } /> 
         ```
       - 修改建议：将对象定义为常量或使用useMemo钩子来记忆化该配置对象，以确保引用稳定。
       - 优化后代码：
-        ```javascript 
-        const PROPS_CONFIG = { ... 传入参数 }; <Component props={PROPS_CONFIG } />
+        ```javascript
+        // 方式1：静态配置（无依赖项）
+        const PROPS_CONFIG = { ...传入参数 };
+        <Component config={PROPS_CONFIG} />
+
+        // 方式2：动态配置（含依赖项）
+        const PROPS_CONFIG = useMemo(() => ({ ...传入参数 }), [依赖项]);
+        <Component config={PROPS_CONFIG} />
         ```
     - 02：在代码中，所有定义在组件外层、作为props传递给子组件的存在依赖项的函数，必须使用useCallback或项目指定的useMemoizedFn进行包裹，以防止因函数引用变化而触发下游组件的无效更新。例如，以下代码中，confirm函数每次渲染都会重新创建，传递给子组件的 props 引用不稳定，导致子组件不必要的重渲染：
       - 有问题代码: 
