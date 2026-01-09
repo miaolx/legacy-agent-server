@@ -47,11 +47,7 @@ export const getFileContent = new Tool({
     const { projectId, project_id, file_path, path, headRef, ref } = _context;
 
     try {
-      let _projectId = projectId || project_id;
-      let _filePath = path || file_path;
-      let _ref = headRef || ref || 'dev'
-
-      const response = await GitlabAPI.RepositoryFiles.show(_projectId, _filePath, _ref);
+      const response = await GitlabAPI.RepositoryFiles.show(projectId || project_id, path || file_path, headRef || ref);
 
       if (Array.isArray(response)) {
         return {
@@ -68,10 +64,13 @@ export const getFileContent = new Tool({
       }
 
       let content: string;
+      let keywords: string;
       try {
         content = Buffer.from(response.content, "base64").toString(
           "utf-8",
         );
+        const matches = [...content.matchAll(/from\s+['"](.+?)['"]/g)];
+        keywords = matches.map(match => match[1]).join(',').substring(0, 100)
       } catch (error) {
         return {
           ok: false as const,
@@ -82,6 +81,7 @@ export const getFileContent = new Tool({
       return {
         ok: true as const,
         content,
+        keywords
       };
     } catch (error) {
       console.error("Error fetching file content:", error);

@@ -116,10 +116,10 @@ export const getDiffsContent = new Tool({
 
     try {
       const matches = [...filteredFiles.diff.matchAll(/from\s+['"](.+?)['"]/g)];
-      const relateList = matches.map(match => match[1])
+      const _relateList = matches.map(match => match[1])
       const filterRelateFilesList = filesResponse?.changes.filter((f: any) => {
         let new_path = f.new_path
-        return relateList.some(v => new_path.includes(v))
+        return _relateList.some(v => new_path.includes(v))
       })
       const filterRelateFiles = filterRelateFilesList.map((i: any) => i.diff).join('//n')
       relatedList = filterRelateFiles
@@ -151,7 +151,7 @@ export const getDiffsContent = new Tool({
         const { response, status } = await relatedFiles.json();
 
         if (status === 'success') {
-          relatedList = relatedList + response
+          relatedList = response
         }
       } catch (error) {
         console.error(error);
