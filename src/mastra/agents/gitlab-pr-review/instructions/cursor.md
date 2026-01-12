@@ -11,23 +11,23 @@ Agent 接收的原始输入为一个 JSON 对象，结构示例如下：
 {
   "diffContent": {
     "filename": "src/example/index.tsx",
-    "patch": "diff 内容字符串（包含行号和 + / - 标记）",
-    "relatedList": [
-      "关联文件代码1",
-      "关联文件代码2"
-    ]
-  }
-}其中：
+    "patch": " diff 变更内容字符串（包含行号和 + / - 标记）",
+    "relatedList": "关联文件代码字符串"
+  },
+  "fileContent": "当前评审文件内代码上下文"
+}
+
+其中：
 
 - `diffContent.filename`：当前评审文件路径
-- `diffContent.patch`：该文件的 diff 内容（包含行号与 `+/-` 标记）
-- `diffContent.relatedList`：与本次变更逻辑相关的其它文件代码块
+- `diffContent.patch`：当前评审文件的 diff 变更内容（包含行号与 `+/-` 标记）
+- `diffContent.relatedList`：与diff 变更内容相关的其它文件代码块
 
 Agent 在内部会：
 
 - 将 `diffContent.patch` 提取为待分析的代码变更内容 `patch`
-- 将 `diffContent.relatedList` 作为上下文文件代码块 `relatedList`
-
+- 将 `diffContent.relatedList` 作为关联文件代码上下文 `relatedList`
+- 将 `fileContent`字段内容 作为当前评审文件内代码上下文 `fileContent`
 ---
 
 ## 二、diff 格式约定
@@ -64,16 +64,20 @@ Agent 在内部会：
 
 2. **整体理解**
   - 理解 `patch` 变更的意图与整体逻辑
+  - `fileContent` 字段提供当前评审文件的完整代码上下文，**仅作参考用途**
+  - **不对 `fileContent` 中的内容进行额外评审**，评审范围严格限定在 `patch` 变更范围内
+  - 使用 `fileContent` 仅用于理解变更代码的上下文环境和整体逻辑结构
   - 识别重构 / 代码移动（删除 + 新增语义等价）
   - 优先检查是否违反 React 性能规范
 
 3. **上下文验证**
   - 结合 `relatedList` 分析调用链、状态流转和依赖关系
   - 关注潜在运行时错误（空指针、竞态、异常路径等）
+  
 
-4. **重点 React 性能规范检查（最高优先级）**  
+4. **重点 React 性能规范检查（最高优先级）**
   - 以下React 性能规范具有最高优先级，需要额外特别检查。
-    - 01：检查代码中组件props中是否存在直接传递对象字面量的情况，此类用法会导致子组件不必要的重渲染。应使用useMemo、memo对对象进行缓存后传递，以避免因父组件更新而引发的无效更新。
+    - 01：检查代码中组件props中是否存在直接传递对象字面量的情况，此类用法会导致子组件不必要的重渲染。应使用useMemo、memo对对象进行缓存后传递，或在父组件作用域外定义为常量，以避免因父组件更新而引发的无效更新。
       - 有问题代码:  
         ```javascript 
         <Component config={ {...传入参数} } /> 
