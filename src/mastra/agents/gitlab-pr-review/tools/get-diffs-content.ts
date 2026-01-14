@@ -103,7 +103,6 @@ export const getDiffsContent = new Tool({
     console.log("🚀 ~ getDiffsContent _context:", _context)
     const { projectId, project_id, mergeRequestIid, merge_request_iid, paths, diffIndex, isDefault } = _context;
 
-    let relatedList = ''
     let filteredFiles: any = { diff: '' }
     let filesResponse: any = null
 
@@ -114,49 +113,9 @@ export const getDiffsContent = new Tool({
       console.error(error);
     }
 
-    try {
-      const matches = [...filteredFiles.diff.matchAll(/from\s+['"](.+?)['"]/g)];
-      const _relateList = matches.map(match => match[1])
-      const filterRelateFilesList = filesResponse?.changes.filter((f: any) => {
-        let new_path = f.new_path
-        return _relateList.some(v => new_path.includes(v))
-      })
-      const filterRelateFiles = filterRelateFilesList.map((i: any) => i.diff).join('//n')
-      relatedList = filterRelateFiles
-    } catch (err) {
-      console.error(err);
-    }
 
     let [diff, added, removed] = parsePatch(filteredFiles.diff)
 
-    if (!isDefault) {
-      try {
-        if (diffIndex || diffIndex === 0) {
-          diff = extractDiffs(filteredFiles.diff)?.[diffIndex]
-        }
-
-        const relatedFiles = await fetch('http://10.15.97.188:8000/api/chat_with_system', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: JSON.stringify({
-            message: `在文件${filteredFiles.new_path}中变更内容为${diff}，请提供与该变更内容最可能存在关联的代码块，至多3个。返回数据中只要结果，不要带有查询内容。`,
-            return_documents_only: true,
-            "relate-documents-count": 3
-          }),
-        });
-
-        const { response, status } = await relatedFiles.json();
-
-        if (status === 'success') {
-          relatedList = response
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    }
 
     console.log('getDiffsContent执行完成');
 
@@ -165,7 +124,6 @@ export const getDiffsContent = new Tool({
       patch: diff,
       //      added,
       //      removed,
-      relatedList: relatedList
     }
 
     return files

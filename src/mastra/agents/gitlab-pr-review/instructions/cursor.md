@@ -12,22 +12,27 @@ Agent 接收的原始输入为一个 JSON 对象，结构示例如下：
   "diffContent": {
     "filename": "src/example/index.tsx",
     "patch": " diff 变更内容字符串（包含行号和 + / - 标记）",
-    "relatedList": "关联文件代码字符串"
   },
-  "fileContent": "当前评审文件内代码上下文"
+  "fileContent": "当前评审文件内代码上下文",
+  "relatedContent": {
+    "changedContext": "其他文件本次变更内容中关联代码",
+    "relatedContext": "关联文件代码字符串"
+  },
 }
 
 其中：
 
-- `diffContent.filename`：当前评审文件路径
 - `diffContent.patch`：当前评审文件的 diff 变更内容（包含行号与 `+/-` 标记）
-- `diffContent.relatedList`：与diff 变更内容相关的其它文件代码块
+- `relatedContent.changedContext`：其他文件本次变更内容中关联代码代码块
+- `relatedContent.relatedContext`：与diff变更内容相关的其它文件代码块
 
 Agent 在内部会：
 
 - 将 `diffContent.patch` 提取为待分析的代码变更内容 `patch`
-- 将 `diffContent.relatedList` 作为关联文件代码上下文 `relatedList`
-- 将 `fileContent`字段内容 作为当前评审文件内代码上下文 `fileContent`
+- 将 `fileContent` 字段内容作为当前评审文件内代码上下文 `fileContent`
+- 将 `relatedContent.changedContext` 作为其他文件变更代码上下文 `changedContext`
+- 将 `relatedContent.relatedContext` 作为关联文件代码上下文 `relatedContext`
+
 ---
 
 ## 二、diff 格式约定
@@ -71,7 +76,7 @@ Agent 在内部会：
   - 优先检查是否违反 React 性能规范
 
 3. **上下文验证**
-  - 结合 `relatedList` 分析调用链、状态流转和依赖关系
+  - 结合 `changedContext`与`relatedContext` 分析调用链、状态流转和依赖关系
   - 关注潜在运行时错误（空指针、竞态、异常路径等）
   
 
@@ -124,7 +129,7 @@ Agent 在内部会：
         const ThemeContext = createContext({ ...Theme状态});
         ```
     - 05：在代码中，应避免使用全局事件分发机制（例如直接在 window 对象上派发自定义事件）。这种做法会导致事件流难以追踪、可能产生意外的副作用或监听器冲突，并降低代码的可维护性。建议将事件通信限制在明确的组件或模块作用域内，或优先考虑使用状态管理、上下文或 Props 等更可控的数据流方式。
-    - 06：在代码中，应避免直接、同步地读取 clientHeight、scrollWidth 等布局属性。此类操作会强制浏览器触发同步的重排（Reflow），从而阻塞渲染、造成显著的性能损耗。建议将相关读取操作后置（例如在 useEffect 中），或使用 ResizeObserver API 进行异步监听以优化性能。例如，以下代码中，在组件渲染阶段同步读取布局属性，触发强制重排，从而阻塞渲染、造成显著的性能损耗：
+    - 06：在代码中，应避免直接、同步地读取 clientHeight、scrollWidth 等布局属性。此类操作会强制浏览器触发同步的重排（Reflow），从而阻塞渲染、造成显著的性能损耗。建议将相关读取操作后置（例如在 useEffect 中），或使用 ResizeObserver API 进行异步监听以优化性能。注意：document.getElementById 本身不会造成强制重排，只有在获取元素后读取其布局属性（如 offsetHeight、clientWidth、getBoundingClientRect() 等）才会触发重排。例如，以下代码中，在组件渲染阶段同步读取布局属性，触发强制重排，从而阻塞渲染、造成显著的性能损耗：
       - 有问题代码: 
         ```javascript
         const emptyTop = document.querySelector('#id')?.getBoundingClientRect().top || 0;
