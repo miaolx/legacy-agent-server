@@ -21,6 +21,8 @@
     "@mastra/memory": "^0.2.6",
     "@mastra/pg": "^0.3.4",
     "@types/pg": "^8.11.14",
+    "acorn": "^8.15.0",
+    "acorn-walk": "^8.3.4",
     "adm-zip": "^0.5.16",
     "mastra": "^0.4.4",
     "octokit": "^4.1.2",

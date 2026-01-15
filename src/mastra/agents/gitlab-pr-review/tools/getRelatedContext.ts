@@ -87,7 +87,7 @@ function clearJsComments(jsStr: string) {
  */
 function getJsDefineReg(keyword: string) {
   const regStr = [
-    // 1. 变量定义: var/let/const 关键词 = xxx
+    // 1. 变量定义: var/let/const 关键词 = xxx 或 关键词: xxx (解构/对象内定义)
     `(var|let|const)\\s+${keyword}\\s*[=:]\\s*[^;{},]+[;}]?`,
     // 2. 函数声明定义: function 关键词() { ... }
     `function\\s+${keyword}\\s*\\([^)]*\\)\\s*\\{[\\s\\S]{0,500}?`,
@@ -98,11 +98,15 @@ function getJsDefineReg(keyword: string) {
     // 5. 对象字面量的属性/方法定义: { 关键词:值 } / { 关键词(){} }
     `${keyword}\\s*[:=]\\s*([^,}]+|function\\s*\\([^)]*\\)\\s*\\{[\\s\\S]{0,500}?)`,
     // 6. 原生全局挂载定义: window.关键词=xxx / this.关键词=xxx
-    `(window|this)\\.${keyword}\\s*=\\s*[^;]+`,
-    // 7. ✨【新增】任意单层对象挂载定义: obj.关键词=xxx / utils.关键词=()=>{} （最常用）
-    `[a-zA-Z0-9_$]+\\.${keyword}\\s*=\\s*[^;]+`,
-    // 8. ✨【新增】任意多层嵌套对象挂载定义: a.b.关键词=xxx / res.data.关键词=xxx / global.config.关键词=xxx
-    `[a-zA-Z0-9_$]+(\\.[a-zA-Z0-9_$]+)*\\.${keyword}\\s*=\\s*[^;]+`
+    `(window|this)\\.${keyword}\\s*=\\s*[^;},]+`,
+    // 7. 任意多层对象挂载定义: a.b.关键词=xxx / res.data.关键词=xxx 
+    `[a-zA-Z0-9_$]+(\\.[a-zA-Z0-9_$]+)*\\.${keyword}\\s*=\\s*[^;},]+`,
+    // 8. 关键词作为对象：单层属性赋值（点访问） 如：keyword.name=xxx / keyword.age=18 / keyword.fn=()=>{}
+    `${keyword}\\.\\s*[a-zA-Z0-9_$]+\\s*=\\s*[^;},\\n]+`,
+    // 9. 关键词作为对象：单层属性赋值（方括号访问） 如：keyword['name']=xxx / keyword["age"]=xxx (兼容单双引号)
+    `${keyword}\\[\\s*['"][a-zA-Z0-9_$]+['"]\\s*\\]\\s*=\\s*[^;},\\n]+`,
+    // 10.关键词作为对象：多层嵌套属性赋值（最常用） 如：keyword.info.name=xxx / keyword.data.list[0].id=1 / keyword.fn.params={}
+    `${keyword}(\\.\\s*[a-zA-Z0-9_$]+|\\[\\s*['"][a-zA-Z0-9_$]+['"]\\s*\\])+\\s*=\\s*[^;},\\n]+`
   ].join('|');
   return new RegExp(regStr, 'img'); // i:忽略大小写 m:多行匹配 g:全局匹配
 }
