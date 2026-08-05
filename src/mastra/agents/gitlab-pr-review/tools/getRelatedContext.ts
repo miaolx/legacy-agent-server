@@ -1,15 +1,17 @@
-import { GitlabAPI } from "../../../lib/gitlab"
+import { GitlabAPI } from "../../../lib/gitlab";
 import { Tool } from "@mastra/core/tools";
 import { z } from "zod";
 
 const inputSchema = z.object({
   projectId: z.string().describe("The projectId of the repository"),
-  mergeRequestIid: z.number().describe("The name of the mergeRequest (e.g., 1)."),
+  mergeRequestIid: z
+    .number()
+    .describe("The name of the mergeRequest (e.g., 1)."),
   path: z.string().describe("The file path to fetch content for"),
   headRef: z
     .string()
     .describe(
-      "The name of the commit/branch/tag. Default: the repository's default branch."
+      "The name of the commit/branch/tag. Default: the repository's default branch.",
     ),
 });
 
@@ -17,8 +19,8 @@ const outputSchema = z.union([
   z
     .object({
       ok: z.literal(true),
-      relatedContext: z.string().describe('Related context of the diff'),
-      changedContext: z.string().describe('Related Changed context of the MR'),
+      relatedContext: z.string().describe("Related context of the diff"),
+      changedContext: z.string().describe("Related Changed context of the MR"),
     })
     .describe("The success object"),
   z
@@ -45,12 +47,12 @@ function getTopImportVars(jsCode: string) {
 
   while ((match = importReg.exec(jsCode)) !== null) {
     const importBody = match[1]; // 捕获 import 和 from 之间的变量内容
-    const fromPath = match[2];    // 捕获 from 后面的路径/包名 ✅新增核心捕获
-    
+    const fromPath = match[2]; // 捕获 from 后面的路径/包名 ✅新增核心捕获
+
     // ✅ 核心过滤逻辑：只处理【本地文件】，排除所有第三方库
     const isLocalFile = /^(\.\/|\.\.\/|\/|@\/|@pages\/)/.test(fromPath);
     if (!isLocalFile) continue; // 如果是第三方库，直接跳过本次循环
-    
+
     // 1. 提取【默认导入】的变量名 (import a from './xxx' / import user, {xxx} from './xxx')
     const defaultVarReg = /^(\w+)(?=\s*,?)/;
     const defaultVarMatch = importBody.match(defaultVarReg);
@@ -75,9 +77,11 @@ function getTopImportVars(jsCode: string) {
   return Array.from(importVars);
 }
 
-
 function clearJsComments(jsStr: string) {
-  return jsStr.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*/g, '').trim();
+  return jsStr
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/\/\/.*/g, "")
+    .trim();
 }
 
 /**
@@ -99,16 +103,16 @@ function getJsDefineReg(keyword: string) {
     `${keyword}\\s*[:=]\\s*([^,}]+|function\\s*\\([^)]*\\)\\s*\\{[\\s\\S]{0,500}?)`,
     // 6. 原生全局挂载定义: window.关键词=xxx / this.关键词=xxx
     `(window|this)\\.${keyword}\\s*=\\s*[^;},]+`,
-    // 7. 任意多层对象挂载定义: a.b.关键词=xxx / res.data.关键词=xxx 
+    // 7. 任意多层对象挂载定义: a.b.关键词=xxx / res.data.关键词=xxx
     `[a-zA-Z0-9_$]+(\\.[a-zA-Z0-9_$]+)*\\.${keyword}\\s*=\\s*[^;},]+`,
     // 8. 关键词作为对象：单层属性赋值（点访问） 如：keyword.name=xxx / keyword.age=18 / keyword.fn=()=>{}
     `${keyword}\\.\\s*[a-zA-Z0-9_$]+\\s*=\\s*[^;},\\n]+`,
     // 9. 关键词作为对象：单层属性赋值（方括号访问） 如：keyword['name']=xxx / keyword["age"]=xxx (兼容单双引号)
     `${keyword}\\[\\s*['"][a-zA-Z0-9_$]+['"]\\s*\\]\\s*=\\s*[^;},\\n]+`,
     // 10.关键词作为对象：多层嵌套属性赋值（最常用） 如：keyword.info.name=xxx / keyword.data.list[0].id=1 / keyword.fn.params={}
-    `${keyword}(\\.\\s*[a-zA-Z0-9_$]+|\\[\\s*['"][a-zA-Z0-9_$]+['"]\\s*\\])+\\s*=\\s*[^;},\\n]+`
-  ].join('|');
-  return new RegExp(regStr, 'img'); // i:忽略大小写 m:多行匹配 g:全局匹配
+    `${keyword}(\\.\\s*[a-zA-Z0-9_$]+|\\[\\s*['"][a-zA-Z0-9_$]+['"]\\s*\\])+\\s*=\\s*[^;},\\n]+`,
+  ].join("|");
+  return new RegExp(regStr, "img"); // i:忽略大小写 m:多行匹配 g:全局匹配
 }
 
 /**
@@ -118,10 +122,18 @@ function getJsDefineReg(keyword: string) {
  * @param {number} [contextLine=2] 可选：匹配行的【前后各取N行】上下文，默认前后各2行
  * @returns {Array<string>} 出参：去重后的、带上下文的纯代码字符串数组
  */
-function findJsDefineFromDiffWithContext(diffStrList: Array<string>, keywords: Array<string>, contextLine = 2) {
+function findJsDefineFromDiffWithContext(
+  diffStrList: Array<string>,
+  keywords: Array<string>,
+  contextLine = 2,
+) {
   // 边界值判断：入参非数组/空数组，直接返回空数组
-  if (!Array.isArray(diffStrList) || diffStrList.length === 0 ||
-    !Array.isArray(keywords) || keywords.length === 0) {
+  if (
+    !Array.isArray(diffStrList) ||
+    diffStrList.length === 0 ||
+    !Array.isArray(keywords) ||
+    keywords.length === 0
+  ) {
     return [];
   }
   // 上下文行数容错：传负数/0则取0行（只返回匹配行本身）
@@ -129,19 +141,19 @@ function findJsDefineFromDiffWithContext(diffStrList: Array<string>, keywords: A
   const tempMatchList: any[] = [];
 
   // 遍历每一个diff字符串
-  diffStrList.forEach(diffStr => {
-    if (typeof diffStr !== 'string' || diffStr.trim() === '') return;
+  diffStrList.forEach((diffStr) => {
+    if (typeof diffStr !== "string" || diffStr.trim() === "") return;
 
     // 1. 按行分割diff字符串，预处理每行并保存【清洗后的行+行索引】，核心：保留行的顺序和索引用于取上下文
-    const diffLines = diffStr.split('\n');
+    const diffLines = diffStr.split("\n");
     const validLineList: any[] = []; // 格式: [{ code: '清洗后的纯代码', originLine: '原始diff行' }]
-    diffLines.forEach(line => {
+    diffLines.forEach((line) => {
       const trimedLine = line.trim();
-      if (trimedLine === '') return; // 过滤空行
-      if (line.startsWith('-')) return; // 过滤删除行（-开头）
+      if (trimedLine === "") return; // 过滤空行
+      if (line.startsWith("-")) return; // 过滤删除行（-开头）
 
       // 处理diff标识：+开头去掉+号，其他行保留纯内容
-      const pureCode = line.startsWith('+') ? line.slice(1).trim() : trimedLine;
+      const pureCode = line.startsWith("+") ? line.slice(1).trim() : trimedLine;
       const cleanCode = clearJsComments(pureCode); // 清除注释
       if (cleanCode) {
         validLineList.push({ code: cleanCode, originLine: line });
@@ -150,10 +162,10 @@ function findJsDefineFromDiffWithContext(diffStrList: Array<string>, keywords: A
 
     if (validLineList.length === 0) return;
     // 拼接所有有效代码用于正则匹配，同时保留行列表用于取上下文
-    const fullValidCode = validLineList.map(item => item.code).join(' ');
+    const fullValidCode = validLineList.map((item) => item.code).join(" ");
 
     // 2. 批量匹配所有关键词
-    keywords.forEach(keyword => {
+    keywords.forEach((keyword) => {
       const reg = getJsDefineReg(keyword);
       let matchRes;
       while ((matchRes = reg.exec(fullValidCode)) !== null) {
@@ -161,16 +173,23 @@ function findJsDefineFromDiffWithContext(diffStrList: Array<string>, keywords: A
         if (!matchCode || !matchCode.includes(keyword)) continue;
 
         // 3. 找到匹配代码在有效行列表中的【行索引】，核心：用于取前后上下文
-        const matchLineIndex = validLineList.findIndex(item => item.code.includes(matchCode.substring(0, 30)));
+        const matchLineIndex = validLineList.findIndex((item) =>
+          item.code.includes(matchCode.substring(0, 30)),
+        );
         if (matchLineIndex === -1) continue;
 
         // 4. 计算上下文的起止行：智能边界处理，不会越界
         const startIdx = Math.max(0, matchLineIndex - ctxLine); // 往前取N行，最小到0
-        const endIdx = Math.min(validLineList.length, matchLineIndex + ctxLine + 1); // 往后取N行，最大到最后一行
+        const endIdx = Math.min(
+          validLineList.length,
+          matchLineIndex + ctxLine + 1,
+        ); // 往后取N行，最大到最后一行
 
         // 5. 截取上下文行并拼接成完整代码片段
         const contextLines = validLineList.slice(startIdx, endIdx);
-        const fullContextCode = contextLines.map(item => item.code).join('\n');
+        const fullContextCode = contextLines
+          .map((item) => item.code)
+          .join("\n");
 
         // 6. 存入临时列表，后续去重
         tempMatchList.push(fullContextCode);
@@ -180,38 +199,61 @@ function findJsDefineFromDiffWithContext(diffStrList: Array<string>, keywords: A
 
   // 最终：去重 + 过滤空字符串，返回纯字符串数组
   const uniqueSet = new Set(tempMatchList);
-  return Array.from(uniqueSet).filter(item => item.trim() !== '');
+  return Array.from(uniqueSet).filter((item) => item.trim() !== "");
 }
 
 export const getRelatedContext = new Tool({
   id: "getRelatedContext",
-  description:
-    "get the related context from Gitlab diffs",
+  description: "get the related context from Gitlab diffs",
   inputSchema,
   outputSchema,
   execute: async ({ context }) => {
-    let _context = {}
-    if (typeof context === 'string' || context instanceof String) {
-      _context = JSON.parse(context?.trim().replace(/'/g, '"').replace(/(\w+):/g, '"$1":'))
+    let _context = {};
+    if (typeof context === "string" || context instanceof String) {
+      _context = JSON.parse(
+        context
+          ?.trim()
+          .replace(/'/g, '"')
+          .replace(/(\w+):/g, '"$1":'),
+      );
     } else {
-      _context = context
+      _context = context;
     }
 
-    const { projectId, project_id, mergeRequestIid, file_path, path, headRef, ref } = _context as any;
+    const {
+      projectId,
+      project_id,
+      mergeRequestIid,
+      file_path,
+      path,
+      headRef,
+      ref,
+    } = _context as any;
 
-    let filteredFiles: any = { new_path: '', diff: '' }
-    let relatedFiles: any = []
-    let filesResponse: any = null
-    let relatedContext = ''
-    let changedContext = ''
+    let filteredFiles: any = { new_path: "", diff: "" };
+    let relatedFiles: any = [];
+    let filesResponse: any = null;
+    let relatedContext = "";
+    let changedContext = "";
 
     try {
-      const response = await GitlabAPI.RepositoryFiles.show(projectId || project_id, path || file_path, headRef || ref);
+      const response = await GitlabAPI.RepositoryFiles.show(
+        projectId || project_id,
+        path || file_path,
+        headRef || ref,
+      );
 
       try {
-        filesResponse = await GitlabAPI.MergeRequests.showChanges(projectId || project_id, mergeRequestIid || mergeRequestIid);
-        relatedFiles = filesResponse?.changes.filter((f: any) => !path.includes(f.new_path))?.map((i: any) => i.diff);
-        filteredFiles = filesResponse?.changes.filter((f: any) => path.includes(f.new_path))?.[0];
+        filesResponse = await GitlabAPI.MergeRequests.showChanges(
+          projectId || project_id,
+          mergeRequestIid || mergeRequestIid,
+        );
+        relatedFiles = filesResponse?.changes
+          .filter((f: any) => !path.includes(f.new_path))
+          ?.map((i: any) => i.diff);
+        filteredFiles = filesResponse?.changes.filter((f: any) =>
+          path.includes(f.new_path),
+        )?.[0];
       } catch (error) {
         console.error(error);
       }
@@ -234,11 +276,12 @@ export const getRelatedContext = new Tool({
       let keywords: any[];
 
       try {
-        content = Buffer.from(response.content, "base64").toString(
-          "utf-8",
-        );
-        keywords = getTopImportVars(content)
-        changedContext = findJsDefineFromDiffWithContext(relatedFiles, keywords)?.join('/n')
+        content = Buffer.from(response.content, "base64").toString("utf-8");
+        keywords = getTopImportVars(content);
+        changedContext = findJsDefineFromDiffWithContext(
+          relatedFiles,
+          keywords,
+        )?.join("/n");
       } catch (error) {
         return {
           ok: false as const,
@@ -247,23 +290,39 @@ export const getRelatedContext = new Tool({
       }
 
       try {
-        const relatedFiles = await fetch('http://10.15.97.188:8000/api/chat_with_system', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
+        // const relatedFiles = await fetch('http://10.15.97.188:8000/api/chat_with_system', {
+        //   method: 'POST',
+        //   headers: {
+        //     'Content-Type': 'application/json',
+        //     'Accept': 'application/json',
+        //   },
+        //   body: JSON.stringify({
+        //     message: `在文件${filteredFiles.new_path}中变更内容为${filteredFiles.diff}，请提供与该变更内容最可能存在关联的代码块，至多3个。返回数据中只要结果，不要带有查询内容。`,
+        //     return_documents_only: true,
+        //     "relate-documents-count": 3
+        //   }),
+        // });
+
+        const relatedFiles = await fetch(
+          "http://10.15.97.188:8090/api/gitnexus/code-search",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify({
+              repo_name: "pc_qyyjt_multiple_tab_project",
+              keywords: keywords,
+              similarity_threshold: 0.6,
+            }),
           },
-          body: JSON.stringify({
-            message: `在文件${filteredFiles.new_path}中变更内容为${filteredFiles.diff}，请提供与该变更内容最可能存在关联的代码块，至多3个。返回数据中只要结果，不要带有查询内容。`,
-            return_documents_only: true,
-            "relate-documents-count": 3
-          }),
-        });
+        );
 
         const { response, status } = await relatedFiles.json();
 
-        if (status === 'success') {
-          relatedContext = response
+        if (status === "success") {
+          relatedContext = response;
         }
       } catch (error) {
         console.error(error);
@@ -272,7 +331,7 @@ export const getRelatedContext = new Tool({
       return {
         ok: true as const,
         relatedContext,
-        changedContext
+        changedContext,
       };
     } catch (error) {
       console.error("Error fetching file content:", error);
